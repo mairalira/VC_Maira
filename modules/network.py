@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import models
+from torchvision.models import ResNet50_Weights, VGG16_Weights, AlexNet_Weights #added
 
 cfg = {
     'VGG11': [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
@@ -17,26 +18,27 @@ cfg = {
 
 class VGG_Alex(nn.Module):
     def __init__(self, arch):
-        super(Net, self).__init__()
+        super(VGG_Alex, self).__init__()
         # Model Selection
         num_classes = 10
-        original_model = models.__dict__[arch](pretrained=True)
 
         if arch.startswith('vgg16'):
+            original_model=models.vgg16(weights=VGG16_Weights.IMAGENET1K_V1) #modified because pretrained is deprecated, switched to weights
             self.features = original_model.features
-            self.classifier = nn.Sequential(OrderedDict([
-                ('do1', nn.Dropout()),
-                ('fc1', nn.Linear(25088, 4096)),
-                ('fc_relu1', nn.ReLU(inplace=True)),
-                ('do2', nn.Dropout()),
-                ('fc2', nn.Linear(4096, 4096)),
-                ('fc_relu2', nn.ReLU(inplace=True)),
-                ('fc3', nn.Linear(4096, num_classes))
-            ]))
+            self.classifier = nn.Sequential(
+                nn.Dropout(),
+                nn.Linear(25088, 4096),
+                nn.ReLU(inplace=True),
+                nn.Dropout(),
+                nn.Linear(4096, 4096),
+                nn.ReLU(inplace=True),
+                nn.Linear(4096, num_classes)
+            )
             self.modelName = 'vgg16'
         elif arch.startswith('alexnet'):
+            original_model = models.alexnet(weights=AlexNet_Weights.IMAGENET1K_V1)
             self.features = original_model.features
-            self.classifier = nn.Sequential(OrderedDict([
+            self.classifier = nn.Sequential(
                 nn.Dropout(),
                 nn.Linear(256 * 6 * 6, 4096),
                 nn.ReLU(inplace=True),
@@ -44,10 +46,10 @@ class VGG_Alex(nn.Module):
                 nn.Linear(4096, 4096),
                 nn.ReLU(inplace=True),
                 nn.Linear(4096, num_classes)
-            ]))
+            )
             self.modelName = 'alexnet'
         else:
-            raise ("Finetuning not supported on this architecture yet")
+            raise ValueError("Finetuning not supported on this architecture yet")
 
         for param in self.features.parameters():
             param.requires_grad = False
@@ -60,11 +62,11 @@ class VGG_Alex(nn.Module):
         return x
 
 
-class Net(nn.Module): #resnet by me
+class Net(nn.Module): #resnet by original article
     def __init__(self, arch):
         super(Net, self).__init__()
         # Model Selection
-        original_model = models.__dict__[arch](pretrained=False)
+        original_model = models.__dict__[arch](weights=ResNet50_Weights.IMAGENET1K_V1)
 
         self.features = torch.nn.Sequential(
             *(list(original_model.children())[:-1]))
