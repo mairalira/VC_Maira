@@ -42,14 +42,14 @@ def get_args():
                         help='random seed (default: 1)')
 
     # parser.add_argument('--train', action='store_true', help='training data')
-    # parser.add_argument('--prune', action='store_true', help='pruning model')
+    parser.add_argument('--prune', action='store_true', help='pruning model')
     # parser.add_argument('--relevance', action='store_true', help='Compute relevances')
     parser.add_argument('--norm', action='store_true', help='add normalization')
     parser.add_argument('--resume', type=bool, default=True, metavar='N',
                         help='if we have pretrained model')
     parser.add_argument('--train', type=bool, default=False, metavar='N',
                         help='training data')
-    parser.add_argument('--prune', type=bool, default=True, metavar='N',
+    # parser.add_argument('--prune', type=bool, default=True, metavar='N',
                         help='pruning model')
     parser.add_argument('--method-type', type=str, default='lrp', metavar='N',
                         help='model architecture selection: grad/taylor/weight/lrp')
@@ -105,7 +105,7 @@ if __name__ == '__main__':
         print(f'Start training! Dataset: {args.data_type}, Architecture: {args.arch}, Epoch: {args.epochs}')
         fine_tuner.train(optimizer=optimizer,epochs=args.epochs)
 
-    if args.prune == True:
+    if args.prune:
         print(f'Start pruning! Dataset: {args.data_type}, Architecture: {args.arch}, Pruning Method: {args.method_type},'
               f' Total Pruning rate: {args.total_pr}, Pruning step: {args.pr_step}')
         fine_tuner.prune()
