@@ -72,16 +72,25 @@ def get_args():
 if __name__ == '__main__':
     args = get_args()
 
+    if args.arch.lower() not in ['alexnet', 'vgg16', 'resnet18', 'resnet50']:
+        raise ValueError('Unsupported architecture specified: {}'.format(args.arch))
+        
     model = {
-        'alexnet': VGG_Alex(arch=args.arch),
-        'vgg16': VGG_Alex(arch=args.arch),
+        'alexnet': VGG_Alex(arch='alexnet'),
+        'vgg16': VGG_Alex(arch='vgg16'),
         'resnet18': ResNet18(),
         'resnet50': ResNet50(),
     }[args.arch.lower()]
 
     if args.resume:
         save_loc = f"./checkpoint/{args.arch}_{args.data_type}_ckpt.pth"
-        model.load_state_dict(torch.load(save_loc)) if args.cuda else model.load_state_dict(torch.load(save_loc))
+        print(f'Saving model checkpoint to: {save_loc}') #to confirm checkpoint address
+        try: 
+            torch.save(model.state_dict(), save_loc)
+            print(f'Model saved successfully at {save_loc})
+        except Exception as e:
+            print(f'Error saving model: {e}')
+        #model.load_state_dict(torch.load(save_loc)) if args.cuda else model.load_state_dict(torch.load(save_loc))
 
     if args.cuda:
         model = model.cuda()
@@ -93,7 +102,7 @@ if __name__ == '__main__':
 
     if args.train:
         print(f'Start training! Dataset: {args.data_type}, Architecture: {args.arch}, Epoch: {args.epochs}')
-        fine_tuner.train(epoches=args.epochs)
+        fine_tuner.train(optimizer=optimizer,epochs=args.epochs)
 
     if args.prune:
         print(f'Start pruning! Dataset: {args.data_type}, Architecture: {args.arch}, Pruning Method: {args.method_type},'
