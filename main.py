@@ -101,6 +101,7 @@ if __name__ == '__main__':
         fine_tuner = modules_vgg.PruningFineTuner(args, model)
 
     if args.train:
+        optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
         print(f'Start training! Dataset: {args.data_type}, Architecture: {args.arch}, Epoch: {args.epochs}')
         fine_tuner.train(optimizer=optimizer,epochs=args.epochs)
 
