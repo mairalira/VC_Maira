@@ -96,18 +96,20 @@ class PruningFineTuner:
                     filters += module.out_channels
         return filters
 
-    def train(self, optimizer=None, epoches=10):
+    def train(self, optimizer=None, epochs=10): #corrected epochs argument (was epoches)
         if optimizer is None:
             optimizer = optim.SGD(self.model.parameters(), lr=self.args.lr,
                                   momentum=self.args.momentum, weight_decay=self.args.weight_decay)
             # optimizer = optim.Adam(self.model.parameters(), lr=self.args.lr)
-            scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.1)
+        
+        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.1)
 
-        for i in range(epoches):
+        for i in range(epochs):
             print("Epoch: ", i)
+            #scheduler.step()
+            #print(f"LR: {scheduler.get_lr()}")
+            
             try: #during training
-                scheduler.step()
-                print(f"LR: {scheduler.get_lr()}")
                 self.train_epoch(optimizer=optimizer)
                 acc, _ = self.test()
 
@@ -117,6 +119,10 @@ class PruningFineTuner:
                     print(f"save a model")
                     save_loc = f"./checkpoint/{self.args.arch}_{self.args.data_type}_ckpt.pth"
                     torch.save(self.model.state_dict(), save_loc)
+
+                optimizer.step() #optimizer before scheduler
+                scheduler.step()
+                
 
             except: #during fine-tuning
                 self.train_epoch(optimizer=optimizer)
