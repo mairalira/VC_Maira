@@ -77,18 +77,18 @@ class FilterPrunner:
                     self.filter_ranks[name] += values.cpu() if torch.cuda.is_available() else values
 
     def forward(self, x):
-        self.activations = []  # 전체 conv_layer의 activation map 수
+        self.activations = []  # 전체 Number of activation maps for the entire conv_layer
         self.weights = []
         self.gradients = []
         self.grad_index = 0
-        self.activation_to_layer = {}  # conv layer의 순서 7: 17의미는 7번째 conv layer가 전체에서 17번째에 있다라는 뜻
+        self.activation_to_layer = {}  # Order of conv layers 7: 17 means that the 7th conv layer is 17th overall.
 
         activation_index = 0
         for layer, (name, module) in enumerate(
                 self.model.features._modules.items()):
-            x = module(x)  # 일반적인 forward를 수행하면서..
+            x = module(x)  # While performing a general forward...
             if isinstance(module,
-                          torch.nn.modules.conv.Conv2d):  # conv layer 일때 여기를 지나감
+                          torch.nn.modules.conv.Conv2d):  # Passes here when doing conv layer
                 x.register_hook(self.compute_rank)
                 if self.args.method_type == 'weight':
                     self.weights.append(module.weight)
@@ -100,7 +100,7 @@ class FilterPrunner:
 
     def compute_rank(self, grad):
         activation_index = len(
-            self.activations) - self.grad_index - 1  # 뒤에서부터 하나씩 끄집어 냄
+            self.activations) - self.grad_index - 1  # Take them out one by one from the back
         activation = self.activations[activation_index]
 
         if args.method_type == 'ICLR':
@@ -186,12 +186,12 @@ class FilterPrunner:
         for i in sorted(self.filter_ranks.keys()):
             for j in range(self.filter_ranks[i].size(0)):
                 data.append((i, j, self.filter_ranks[i][j]))
-                # data 변수에 모든 layer의 모든 filter의 값을 쭈욱 나열 시킨다.
+                # Lists the values ​​of all filters of all layers in the data variable.
         # Make sure each filter has only one rank
         assert len(set([x[:2] for x in data])) == len(data)
 
         filters_to_prune = nsmallest(num, data, itemgetter(
-            2))  # data list 내에서 가장 작은 수를 num(=512개) 만큼 뽑아서 리스트에 저장
+            2))  # Select num (=512) smallest numbers from the data list and store them in the list
         # Make sure the filters are unique
         assert len(set([x[:2] for x in filters_to_prune])) == num
         return filters_to_prune
