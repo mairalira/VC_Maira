@@ -105,7 +105,7 @@ if __name__ == '__main__':
         print(f'Start training! Dataset: {args.data_type}, Architecture: {args.arch}, Epoch: {args.epochs}')
         fine_tuner.train(optimizer=optimizer,epochs=args.epochs)
 
-    if args.prune:
+    if args.prune == True:
         print(f'Start pruning! Dataset: {args.data_type}, Architecture: {args.arch}, Pruning Method: {args.method_type},'
               f' Total Pruning rate: {args.total_pr}, Pruning step: {args.pr_step}')
         fine_tuner.prune()
