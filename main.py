@@ -87,7 +87,7 @@ if __name__ == '__main__':
         print(f'Saving model checkpoint to: {save_loc}') #to confirm checkpoint address
         try: 
             torch.save(model.state_dict(), save_loc)
-            print(f'Model saved successfully at {save_loc})
+            print(f'Model saved successfully at {save_loc}')
         except Exception as e:
             print(f'Error saving model: {e}')
         #model.load_state_dict(torch.load(save_loc)) if args.cuda else model.load_state_dict(torch.load(save_loc))
