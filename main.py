@@ -50,7 +50,7 @@ def get_args():
     parser.add_argument('--train', type=bool, default=False, metavar='N',
                         help='training data')
     # parser.add_argument('--prune', type=bool, default=True, metavar='N',
-                        help='pruning model')
+    #                   help='pruning model')
     parser.add_argument('--method-type', type=str, default='lrp', metavar='N',
                         help='model architecture selection: grad/taylor/weight/lrp')
 
