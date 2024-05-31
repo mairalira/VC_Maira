@@ -4,9 +4,9 @@ import numpy as np
 
 def prune_conv_layer(model, layer_index, filter_index, criterion = 'lrp', cuda_flag = False):
     ''' input parameters
-    1. model: 현재 모델
-    2. layer_index: 자르고자 하는 layer index
-    3. filter_index: 자르고자 하는 layer의 filter index
+    1. model: current model
+    2. layer_index: want to cut layer index
+    3. filter_index: Filter index of the layer you want to cut
     '''
 
     conv = dict(model.named_modules())[layer_index]
@@ -43,25 +43,25 @@ def replace_layers(model, i, indexes, layers):
 
 def prune_conv_layer_sequential(model, layer_index, filter_index, cuda_flag=False):
     ''' input parameters
-    1. model: 현재 모델
-    2. layer_index: 자르고자 하는 layer index
-    3. filter_index: 자르고자 하는 layer의 filter index
+    1. model: current model
+    2. layer_index: Layer index you want to cut
+    3. filter_index: Filter index of the layer you want to cut
     '''
     # _, conv = model.features._modules.items()[layer_index]
-    _, conv = list(model.features._modules.items())[layer_index]  # 해당 layer를 우선 끄집어 온다.
+    _, conv = list(model.features._modules.items())[layer_index]  # The corresponding layer is pulled out first.
     next_conv = None
     offset = 1
 
-    while layer_index + offset < len(model.features._modules.items()):  # 전체 network의 layer 수보다 클때까지 while문 반복
+    while layer_index + offset < len(model.features._modules.items()):  # Repeat the while statement until it is larger than the number of layers in the entire network.
         # res =  model.features._modules.items()[layer_index+offset]
         res = list(model.features._modules.items())[layer_index + offset]
-        if isinstance(res[1], torch.nn.modules.conv.Conv2d):  # 현재 layer를 기준으로 다음 layer가 conv layer이냐?
+        if isinstance(res[1], torch.nn.modules.conv.Conv2d):  # Based on the current layer, is the next layer a conv layer?
             next_name, next_conv = res
             break
         offset = offset + 1
 
-    # 새로운 conv_layer(new_conv)를 다시 생성시킨다.
-    # output 쪽의 갯수를 하나 줄여준다.
+    # Recreates a new conv_layer (new_conv).
+    # Reduces the number on the output side by one.
     new_conv = \
         torch.nn.Conv2d(in_channels=conv.in_channels,
                         out_channels=conv.out_channels - 1,
@@ -78,19 +78,19 @@ def prune_conv_layer_sequential(model, layer_index, filter_index, cuda_flag=Fals
     # for p in new_conv.parameters():
     #     p.requires_grad = False
 
-    # weight는 해당 filter를 제외하고 총 갯수 - 1 를 넣어준다.
+    # The weight is the total number excluding the filter - 1.
     new_weights[: filter_index, :, :, :] = old_weights[: filter_index, :, :, :]
     new_weights[filter_index:, :, :, :] = old_weights[filter_index + 1:, :, :, :]
     new_conv.weight.data = torch.from_numpy(new_weights).cuda() if cuda_flag else torch.from_numpy(new_weights)
 
-    # bias도 해당 filter number의 값을 제외하고 총 갯수 -1를 넣어준다.
+    # For bias, the total number is -1, excluding the value of the filter number.
     bias_numpy = conv.bias.data.cpu().numpy()
     bias = np.zeros(shape=(bias_numpy.shape[0] - 1), dtype=np.float32)
     bias[:filter_index] = bias_numpy[:filter_index]
     bias[filter_index:] = bias_numpy[filter_index + 1:]
     new_conv.bias.data = torch.from_numpy(bias).cuda() if cuda_flag else torch.from_numpy(bias)
 
-    # 다음 conv layer도 받는 쪽의 layer 갯수를 줄여준다.
+    # The next conv layer also reduces the number of layers on the receiving side.
     if not next_conv is None:
         next_new_conv = \
             torch.nn.Conv2d(in_channels=next_conv.in_channels - 1,
@@ -137,7 +137,7 @@ def prune_conv_layer_sequential(model, layer_index, filter_index, cuda_flag=Fals
             layer_index = layer_index + 1
 
         if old_linear_layer is None:
-            raise BaseException("No linear laye found in classifier")
+            raise BaseException("No linear layer found in classifier")
         params_per_input_channel = int(old_linear_layer.in_features / conv.out_channels)
 
         new_linear_layer = \
