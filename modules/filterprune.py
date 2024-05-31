@@ -77,7 +77,7 @@ class FilterPrunner:
                     self.filter_ranks[name] += values.cpu() if torch.cuda.is_available() else values
 
     def forward(self, x):
-        self.activations = []  # 전체 Number of activation maps for the entire conv_layer
+        self.activations = []  # Total Number of activation maps for the entire conv_layer
         self.weights = []
         self.gradients = []
         self.grad_index = 0
