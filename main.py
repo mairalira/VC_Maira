@@ -112,6 +112,7 @@ if __name__ == '__main__':
     else:
         # If pruning is not performed, ensure initial evaluation and results saving
         print(f'Evaluating model without pruning.  Dataset: {args.data_type}, Architecture: {args.arch}')
+        args.save_loss=True
         test_accuracy, test_loss, flop_value, param_value = fine_tuner.test()
 
         # Initialize the DataFrame to store results
