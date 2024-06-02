@@ -110,3 +110,14 @@ if __name__ == '__main__':
               f' Total Pruning rate: {args.total_pr}, Pruning step: {args.pr_step}')
         fine_tuner.prune()
 
+# Test model on CIFAR-10
+print("Testing model on CIFAR-10...")
+fine_tuner.setup_dataloaders(dataset_type='cifar10')  # Setup CIFAR-10 data loaders
+cifar10_accuracy, cifar10_loss = fine_tuner.test()
+print(f"CIFAR-10 Accuracy: {cifar10_accuracy}, CIFAR-10 Loss: {cifar10_loss}")
+
+# Test model on Cats vs. Dogs
+print("Testing model on Cats vs. Dogs...")
+fine_tuner.setup_dataloaders(dataset_type="catsvsdogs")  # Setup Cats vs. Dogs data loaders
+catsvsdogs_accuracy, catsvsdogs_loss = fine_tuner.test()
+print(f"Cats vs. Dogs Accuracy: {catsvsdogs_accuracy}, Cats vs. Dogs Loss: {catsvsdogs_loss}")
