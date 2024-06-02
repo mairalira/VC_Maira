@@ -277,7 +277,7 @@ class PruningFineTuner:
             return test_accuracy, test_loss, flop_value, param_value
 
         else:
-            return test_accuracy, test_loss
+            return test_accuracy, test_loss, None, None
 
     def get_candidates_to_prune(self, num_filters_to_prune, layer_type='conv'):
         self.prunner.reset()
