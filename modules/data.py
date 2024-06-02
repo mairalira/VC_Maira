@@ -161,7 +161,7 @@ def get_catsvsdogs(datapath='../../catsvsdogs/', download=True):
         train_dir = os.path.join(datapath, 'catsvsdogs', 'cats_and_dogs_filtered', 'train')
         test_dir = os.path.join(datapath, 'catsvsdogs', 'cats_and_dogs_filtered', 'validation')
 
-     else:
+    else:
         # If 'catsvsdogs' directory does not exist, fall back to original paths
         train_dir = os.path.join(extract_root, 'train')
         test_dir = os.path.join(extract_root, 'validation')
