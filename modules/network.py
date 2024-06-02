@@ -23,7 +23,7 @@ class VGG_Alex(nn.Module):
         num_classes = 10
 
         if arch.startswith('vgg16'):
-            original_model=models.vgg16(weights=VGG16_Weights.DEFAULT) #modified because pretrained is deprecated, switched to weights
+            original_model=models.vgg16(weights=VGG16_Weights.IMAGENET1K_V2) #modified because pretrained is deprecated, switched to weights
             self.features = original_model.features
             self.classifier = nn.Sequential(
                 nn.Dropout(),
@@ -36,7 +36,7 @@ class VGG_Alex(nn.Module):
             )
             self.modelName = 'vgg16'
         elif arch.startswith('alexnet'):
-            original_model = models.alexnet(weights=AlexNet_Weights.DEFAULT)
+            original_model = models.alexnet(weights=AlexNet_Weights.IMAGENET1K_V2)
             self.features = original_model.features
             self.classifier = nn.Sequential(
                 nn.Dropout(),
@@ -66,7 +66,7 @@ class Net(nn.Module): #resnet by original article
     def __init__(self, arch):
         super(Net, self).__init__()
         # Model Selection
-        original_model = models.__dict__[arch](weights=ResNet50_Weights.DEFAULT)
+        original_model = models.__dict__[arch](weights=ResNet50_Weights.IMAGENET1K_V2)
 
         self.features = torch.nn.Sequential(
             *(list(original_model.children())[:-1]))
