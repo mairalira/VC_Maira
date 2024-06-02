@@ -146,7 +146,7 @@ def get_catsvsdogs(datapath='../.../data', download=True):
     test_dir = os.path.join(extract_root, 'validation')
     
     train_dataset=transform=transforms.Compose([
-                                                transforms.Resize((224,224))
+                                                transforms.Resize((224,224)),
                                                 transforms.RandomHorizonalFlip(),
                                                 transforms.ToTensor(),
                                                 normalize
