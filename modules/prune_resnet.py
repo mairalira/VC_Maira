@@ -77,7 +77,7 @@ class PruningFineTuner:
             # 'imagenet': dataset.get_imagenet, # ImageNet
         }[dataset_type.lower()]
 
-        train_dataset, test_dataset = get_dataset()
+        train_dataset, test_dataset = get_dataset(dataset_type)
 
         print(f"Using dataset: {dataset_type}")
         print(f"train_dataset:{len(train_dataset)}, test_dataset:{len(test_dataset)}")
