@@ -158,8 +158,8 @@ def get_catsvsdogs(datapath='../../catsvsdogs/', download=True):
     
     # Check if the additional 'catsvsdogs' directory exists in the datapath
     if os.path.exists(os.path.join(datapath, 'catsvsdogs')):
-        train_dir = os.path.join(datapath, 'catsvsdogs', 'cats_and_dogs_filtered', 'train')
-        test_dir = os.path.join(datapath, 'catsvsdogs', 'cats_and_dogs_filtered', 'validation')
+        train_dir = os.path.join(datapath, 'catsvsdogs', 'cats_and_dogs_filtered', 'cats_and_dogs_filtered', 'train')
+        test_dir = os.path.join(datapath, 'catsvsdogs', 'cats_and_dogs_filtered', 'cats_and_dogs_filtered', 'validation')
 
     else:
         # If 'catsvsdogs' directory does not exist, fall back to original paths
