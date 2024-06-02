@@ -109,9 +109,8 @@ def get_cifar10(datapath='../../data/', download=True):
     train_dataset = datasets.CIFAR10(root=datapath,
                                      train=True,
                                      transform=transforms.Compose([
-                                         #transforms.RandomCrop(32, padding=4),
-                                         transforms.Resize(224,224),
-                                         # transforms.RandomResizedCrop(224),
+                                         transforms.RandomCrop(32, padding=4),
+                                         transforms.RandomResizedCrop(224),
                                          transforms.RandomHoizontalFlip(),
                                          transforms.ToTensor(),
                                          normalize
@@ -121,7 +120,7 @@ def get_cifar10(datapath='../../data/', download=True):
     test_dataset = datasets.CIFAR10(root=datapath,
                                     train=False,
                                     transform=transforms.Compose([
-                                        transforms.Resize(224,224),
+                                        transforms.Resize(224),
                                         transforms.ToTensor(),
                                         normalize
                                     ]))
