@@ -156,8 +156,11 @@ def get_catsvsdogs(datapath='../../catsvsdogs/', download=True):
                                         normalize
                                         ])
     
-    train_dir = os.path.join(extract_root, 'train')
-    test_dir = os.path.join(extract_root, 'validation')
+    # Check if the additional 'catsvsdogs' directory exists in the datapath
+    if os.path.exists(os.path.join(datapath, 'catsvsdogs')):
+        train_dir = os.path.join(datapath, 'catsvsdogs', 'cats_and_dogs_filtered', 'train')
+        test_dir = os.path.join(datapath, 'catsvsdogs', 'cats_and_dogs_filtered', 'validation')
+    
 
     train_dataset = datasets.ImageFolder(root=train_dir, transform=transform_train)
     test_dataset = datasets.ImageFolder(root=test_dir, transform=transform_test)
