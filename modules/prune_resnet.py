@@ -71,7 +71,7 @@ class PruningFineTuner:
             "cifar10": dataset.get_cifar10,  # CIFAR-10,
             "catsvsdogs": dataset.get_catsvsdogs, #Cats vs dogs dataset included in data acquisition step
             # 'imagenet': dataset.get_imagenet, # ImageNet
-        }[data_type.lower()]
+        }[dataset_type.lower()]
 
         train_dataset, test_dataset = get_dataset()
 
