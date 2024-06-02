@@ -365,8 +365,7 @@ class PruningFineTuner:
                 assert ctr == self.total_num_filters()
 
             self.model = model.cuda() if self.args.cuda else model
-            assert self.total_num_filters() == number_of_filters - 
-                    ((kk + 1) * num_filters_to_prune_per_iteration)#, self.total_num_filters()
+            assert self.total_num_filters() == number_of_filters - ((kk + 1) * num_filters_to_prune_per_iteration)#, self.total_num_filters()
 
             ratio_pruned_filters = float(
                 self.total_num_filters()) / number_of_filters
