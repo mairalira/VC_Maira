@@ -121,7 +121,7 @@ class PruningFineTuner:
                 if acc > self.best_acc:
                     if not os.path.isdir('checkpoint'):
                         os.mkdir('checkpoint')
-                    print(f"save a model")
+                    print(f"save a model at epoch {i}")
                     save_loc = f"./checkpoint/{self.args.arch}_{self.args.data_type}_ckpt.pth"
                     torch.save(self.model.state_dict(), save_loc)
 
@@ -129,14 +129,17 @@ class PruningFineTuner:
                 scheduler.step()
                 
 
-            except: #during fine-tuning
+            except Exception as e: #during fine-tuning
+                print(f'Exception during training: {e}')
                 self.train_epoch(optimizer=optimizer)
                 test_accuracy, test_loss, flop_value, param_value = self.test()
-                self.df.loc[self.COUNT_ROW] = pd.Series({"ratio_pruned": self.ratio_pruned_filters,
-                                                    "test_acc": test_accuracy,
-                                                    "test_loss": test_loss,
-                                                    "flops": flop_value,
-                                                    "params": param_value})
+                self.df.loc[self.COUNT_ROW] = pd.Series({
+                                                        "ratio_pruned": self.ratio_pruned_filters,
+                                                        "test_acc": test_accuracy,
+                                                        "test_loss": test_loss,
+                                                        "flops": flop_value,
+                                                        "params": param_value
+                                                        })
                 self.COUNT_ROW += 1
 
         print("Finished fine tuning")
@@ -310,7 +313,7 @@ class PruningFineTuner:
         self.model.eval()
 
         # Get the accuracy before pruning
-        self.temp = 0
+        #self.temp = 0
         test_accuracy, test_loss, flop_value, param_value = self.test()
 
         # Make sure all the layers are trainable
@@ -327,7 +330,8 @@ class PruningFineTuner:
         results_file_train = f"scenario1_train_{self.args.data_type}_{self.args.arch}_{self.args.method_type}_trial{self.args.trialnum:02d}.csv"
         self.df = pd.DataFrame(columns=["ratio_pruned", "test_acc", "test_loss", "flops","params"])
         self.dt = pd.DataFrame(columns=["ratio_pruned", "train_loss"])
-        self.df.loc[self.COUNT_ROW] = pd.Series({"ratio_pruned": self.ratio_pruned_filters,
+        self.df.loc[self.COUNT_ROW] = pd.Series({
+                                                 "ratio_pruned": self.ratio_pruned_filters,
                                                  "test_acc": test_accuracy,
                                                  "test_loss": test_loss, "flops": flop_value,
                                                  "params": param_value})
@@ -361,15 +365,17 @@ class PruningFineTuner:
                 assert ctr == self.total_num_filters()
 
             self.model = model.cuda() if self.args.cuda else model
-            assert self.total_num_filters() == number_of_filters - (
-                    kk + 1) * num_filters_to_prune_per_iteration, self.total_num_filters()
+            assert self.total_num_filters() == number_of_filters - 
+                    ((kk + 1) * num_filters_to_prune_per_iteration)#, self.total_num_filters()
 
             ratio_pruned_filters = float(
                 self.total_num_filters()) / number_of_filters
-            message = str(
-                100 * ratio_pruned_filters) + "%"
-            print("Filters prunned", str(message))
-            test_accuracy, test_loss, flop_value, param_value = self.test()  # 잘리고 나서 test 해봄
+            print(f"Filters pruned: {100 * ratio_pruned_filters}%")
+            
+            #message = str(100 * ratio_pruned_filters) + "%"
+            #print("Filters prunned", str(message))
+            
+            test_accuracy, test_loss, flop_value, param_value = self.test()  # I tested it after it was cut.
 
             self.ratio_pruned_filters = ratio_pruned_filters
             self.df.loc[self.COUNT_ROW] = pd.Series({"ratio_pruned": ratio_pruned_filters,
