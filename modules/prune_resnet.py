@@ -326,8 +326,8 @@ class PruningFineTuner:
         iterations = int(iterations * self.args.total_pr)
 
         self.ratio_pruned_filters = 1.0
-        results_file = f"scenario1_results_{self.args.data_type}_{self.args.arch}_{self.args.method_type}_trial{self.args.trialnum:02d}.csv"
-        results_file_train = f"scenario1_train_{self.args.data_type}_{self.args.arch}_{self.args.method_type}_trial{self.args.trialnum:02d}.csv"
+        results_file = f"{args.save_dir}/scenario1_results_{self.args.data_type}_{self.args.arch}_{self.args.method_type}_trial{self.args.trialnum:02d}.csv"
+        results_file_train = f"{args.save_dir}/scenario1_train_{self.args.data_type}_{self.args.arch}_{self.args.method_type}_trial{self.args.trialnum:02d}.csv"
         self.df = pd.DataFrame(columns=["ratio_pruned", "test_acc", "test_loss", "flops","params"])
         self.dt = pd.DataFrame(columns=["ratio_pruned", "train_loss"])
         self.df.loc[self.COUNT_ROW] = pd.Series({
