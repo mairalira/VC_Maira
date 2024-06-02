@@ -61,7 +61,8 @@ class PruningFineTuner:
         self.COUNT_ROW = 0
         self.COUNT_TRAIN = 0
         self.best_acc = 0
-        self.save_loss = False
+        #self.save_loss = False
+        self.save_loss = True
 
     def setup_dataloaders(self, dataset_type="cifar10"):
         kwargs = {'num_workers': 1, 'pin_memory': True} if self.args.cuda else {}
@@ -236,6 +237,8 @@ class PruningFineTuner:
         test_loss = 0
         correct = 0
         ctr = 0
+        flop_value = 0
+        param_value = 0
 
         for batch_idx, (data, target) in enumerate(self.test_loader):
             if self.args.cuda:
