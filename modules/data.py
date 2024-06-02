@@ -142,22 +142,22 @@ def get_catsvsdogs(datapath='../.../data', download=True):
     
     # Cats vs Dogs Dataset
 
+    transform_train=transforms.Compose([
+                                        transforms.Resize((224,224)),
+                                        transforms.RandomHorizontalFlip(),
+                                        transforms.ToTensor(),
+                                        normalize
+                                        ])
+    
+    transform_test=transforms.Compose([
+                                        transforms.Resize((224,224)),
+                                        transforms.ToTensor(),
+                                        normalize
+                                        ])
+    
     train_dir = os.path.join(extract_root, 'train')
     test_dir = os.path.join(extract_root, 'validation')
-    
-    train_dataset=transform=transforms.Compose([
-                                                transforms.Resize((224,224)),
-                                                transforms.RandomHorizontalFlip(),
-                                                transforms.ToTensor(),
-                                                normalize
-                                                 ])
-    
-    test_dataset=transform=transforms.Compose([
-                                                transforms.Resize((224,224)),
-                                                transforms.ToTensor(),
-                                                normalize
-                                                ])
-    
+
     train_dataset = datasets.ImageFolder(root=train_dir, transform=transform_train)
     test_dataset = datasets.ImageFolder(root=test_dir, transform=transform_test)
     
