@@ -60,7 +60,7 @@ def get_args():
                         help='Pruning step: 0.05 (5% for each step)')
 
     parser.add_argument('--data-type', type=str, default='cifar10', metavar='N',
-                        help='model architecture selection: cifar10/imagenet')
+                        help='model architecture selection: cifar10/imagenet/catsvsdogs')
     parser.add_argument('--save-dir', type=str, default='model', metavar='N',
                         help='saved directory')
 
@@ -111,7 +111,7 @@ if __name__ == '__main__':
         fine_tuner.prune()
     else:
         # If pruning is not performed, ensure initial evaluation and results saving
-        print(f'Evaluating model without pruning. Dataset: {dataset_type}, Architecture: {args.arch}')
+        print(f'Evaluating model without pruning.  Dataset: {args.data_type}, Architecture: {args.arch}')
         test_accuracy, test_loss = fine_tuner.eval_model()
         flop_value, param_value = fine_tuner.calculate_flops_params()
 
@@ -127,21 +127,21 @@ if __name__ == '__main__':
         fine_tuner.COUNT_ROW += 1
 
         # Define the results file paths
-        results_file = f"scenario1_results_{args.data_type}_{args.arch}_{args.method_type}_trial{args.trialnum:02d}.csv"
-        results_file_train = f"scenario1_train_{args.data_type}_{args.arch}_{args.method_type}_trial{args.trialnum:02d}.csv"
+        results_file = f"{args.save_dir}/scenario1_results_{args.data_type}_{args.arch}_{args.method_type}_trial{args.trialnum:02d}.csv"
+        results_file_train = f"{args.save_dir}/scenario1_train_{args.data_type}_{args.arch}_{args.method_type}_trial{args.trialnum:02d}.csv"
 
         # Save the initial evaluation results
         fine_tuner.df.to_csv(results_file)
         fine_tuner.dt.to_csv(results_file_train)
 
 # Test model on CIFAR-10
-print("Testing model on CIFAR-10...")
-fine_tuner.setup_dataloaders(dataset_type='cifar10')  # Setup CIFAR-10 data loaders
-cifar10_accuracy, cifar10_loss = fine_tuner.test()
-print(f"CIFAR-10 Accuracy: {cifar10_accuracy}, CIFAR-10 Loss: {cifar10_loss}")
+#print("Testing model on CIFAR-10...")
+#fine_tuner.setup_dataloaders(dataset_type='cifar10')  # Setup CIFAR-10 data loaders
+#cifar10_accuracy, cifar10_loss = fine_tuner.test()
+#print(f"CIFAR-10 Accuracy: {cifar10_accuracy}, CIFAR-10 Loss: {cifar10_loss}")
 
 # Test model on Cats vs. Dogs
-print("Testing model on Cats vs. Dogs...")
-fine_tuner.setup_dataloaders(dataset_type="catsvsdogs")  # Setup Cats vs. Dogs data loaders
-catsvsdogs_accuracy, catsvsdogs_loss = fine_tuner.test()
-print(f"Cats vs. Dogs Accuracy: {catsvsdogs_accuracy}, Cats vs. Dogs Loss: {catsvsdogs_loss}")
+#print("Testing model on Cats vs. Dogs...")
+#fine_tuner.setup_dataloaders(dataset_type="catsvsdogs")  # Setup Cats vs. Dogs data loaders
+#catsvsdogs_accuracy, catsvsdogs_loss = fine_tuner.test()
+#print(f"Cats vs. Dogs Accuracy: {catsvsdogs_accuracy}, Cats vs. Dogs Loss: {catsvsdogs_loss}")
