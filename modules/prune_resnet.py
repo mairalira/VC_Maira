@@ -356,7 +356,7 @@ class PruningFineTuner:
                                                                    Counter(
                                                                        prune_targets).items()
                                                                    if x[1] > 1]
-            for layer_index, filter_index in prune_targets:  # 하나씩 꺼내서 자르기 시작
+            for layer_index, filter_index in prune_targets:  # Take them out one by one and start cutting them
                 model = prune_conv_layer(model, layer_index, filter_index, criterion=self.args.method_type,
                                          cuda_flag=self.args.cuda)
 
