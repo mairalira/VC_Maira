@@ -147,7 +147,7 @@ def get_catsvsdogs(datapath='../.../data', download=True):
     
     train_dataset=transform=transforms.Compose([
                                                 transforms.Resize((224,224)),
-                                                transforms.RandomHorizonalFlip(),
+                                                transforms.RandomHorizontalFlip(),
                                                 transforms.ToTensor(),
                                                 normalize
                                                  ])
