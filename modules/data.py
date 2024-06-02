@@ -18,6 +18,9 @@ from PIL import Image
 from torchvision import datasets
 from torchvision import transforms
 
+from torch.utils.data import DataLoader #used for cats_vs_dogs
+from torchvision.datasets.utils import download_and_extract_archive  #used for cats_vs_dogs
+
 class ImageNetDatasetValidation(torch.utils.data.Dataset):
     """ This class represents the ImageNet Validation Dataset"""
 
@@ -123,7 +126,43 @@ def get_cifar10(datapath='../../data/', download=True):
                                     ]))
     return train_dataset, test_dataset
 
+def get_catsvsdogs(datapath='../.../data', download=True):
+    '''
+    Included cats_vs_dogs as a dataset for testing
+    '''
+    # since cats_vs_dogs is not a built-in such as CIFAR10 dataset
+    
+    url = "https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip"
+    extract_root = os.path.join(datapath, 'cats_and_dogs_filtered')
 
+    if download:
+        download_and_extract_archive(url, download_root=datapath, extract_root=extract_root)
+    
+    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) #paramaters reference: https://www.kaggle.com/code/accountstatus/cat-v-dog-pytorch-using-torchvision/notebook
+    
+    # Cats vs Dogs Dataset
+
+    train_dir = os.path.join(extract_root, 'train')
+    test_dir = os.path.join(extract_root, 'validation')
+    
+    train_dataset=transform=transforms.Compose([
+                                                transforms.Resize((224,224))
+                                                transforms.RandomHorizonalFlip(),
+                                                transforms.ToTensor(),
+                                                normalize
+                                                 ])
+    
+    test_dataset=transform=transforms.Compose([
+                                                transforms.Resize((224,224)),
+                                                transforms.ToTensor(),
+                                                normalize
+                                                ])
+    
+    train_dataset = datasets.ImageFolder(root=train_dir, transform=transform_train)
+    test_dataset = datasets.ImageFolder(root=test_dir, transform=transform_test)
+    
+    return train_dataset, test_dataset
+    
 def get_imagenet(transform=None, root_dir=None):
     if root_dir is None:
         root_dir = '/ssd7/skyeom/data/imagenet'
@@ -149,3 +188,4 @@ def get_imagenet(transform=None, root_dir=None):
     val = ImageNetDatasetValidation(val_transform, root_dir=root_dir)
 
     return train, val
+
