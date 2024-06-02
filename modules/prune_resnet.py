@@ -64,7 +64,10 @@ class PruningFineTuner:
         #self.save_loss = False
         self.save_loss = True
 
-    def setup_dataloaders(self, dataset_type=self.args.data_type):
+    def setup_dataloaders(self, dataset_type=None):
+        if dataset_type is None:
+            dataset_type = self.args.data_type
+        
         kwargs = {'num_workers': 1, 'pin_memory': True} if self.args.cuda else {}
 
         # Data Acquisition
