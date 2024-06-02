@@ -127,7 +127,7 @@ def get_cifar10(datapath='../../data/', download=True):
                                     ]))
     return train_dataset, test_dataset
 
-def get_catsvsdogs(datapath='../data/', download=True):
+def get_catsvsdogs(datapath='../../catsvsdogs/', download=True):
     '''
     Included cats_vs_dogs as a dataset for testing
     '''
