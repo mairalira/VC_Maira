@@ -109,6 +109,30 @@ if __name__ == '__main__':
         print(f'Start pruning! Dataset: {args.data_type}, Architecture: {args.arch}, Pruning Method: {args.method_type},'
               f' Total Pruning rate: {args.total_pr}, Pruning step: {args.pr_step}')
         fine_tuner.prune()
+     else:
+        # If pruning is not performed, ensure initial evaluation and results saving
+        print(f'Evaluating model without pruning. Dataset: {dataset_type}, Architecture: {args.arch}')
+        test_accuracy, test_loss = fine_tuner.eval_model()
+        flop_value, param_value = fine_tuner.calculate_flops_params()
+
+        # Initialize the DataFrame to store results
+        fine_tuner.df = pd.DataFrame(columns=["ratio_pruned", "test_acc", "test_loss", "flops", "params"])
+        fine_tuner.dt = pd.DataFrame(columns=["epoch", "train_acc", "train_loss"])
+
+        fine_tuner.df.loc[fine_tuner.COUNT_ROW] = pd.Series({"ratio_pruned": 0.0,
+                                                             "test_acc": test_accuracy,
+                                                             "test_loss": test_loss,
+                                                             "flops": flop_value,
+                                                             "params": param_value})
+        fine_tuner.COUNT_ROW += 1
+
+        # Define the results file paths
+        results_file = f"scenario1_results_{args.data_type}_{args.arch}_{args.method_type}_trial{args.trialnum:02d}.csv"
+        results_file_train = f"scenario1_train_{args.data_type}_{args.arch}_{args.method_type}_trial{args.trialnum:02d}.csv"
+
+        # Save the initial evaluation results
+        fine_tuner.df.to_csv(results_file)
+        fine_tuner.dt.to_csv(results_file_train)
 
 # Test model on CIFAR-10
 print("Testing model on CIFAR-10...")
