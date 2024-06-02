@@ -9,7 +9,7 @@ import argparse
 import numpy as np
 import torch
 import os
-import panda as pd
+import pandas as pd
 
 from modules.network import ResNet18, ResNet50, VGG_Alex
 import modules.prune_resnet as modules_resnet
