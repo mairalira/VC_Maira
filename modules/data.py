@@ -121,7 +121,7 @@ def get_cifar10(datapath='../../data/', download=True):
     test_dataset = datasets.CIFAR10(root=datapath,
                                     train=False,
                                     transform=transforms.Compose([
-                                        t# ransforms.Resize(224),
+                                        # transforms.Resize(224),
                                         transforms.ToTensor(),
                                         normalize
                                     ]))
