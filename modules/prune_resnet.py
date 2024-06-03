@@ -279,7 +279,7 @@ class PruningFineTuner:
         all_target = torch.cat(all_target)
 
         # Generate and combine heatmaps for all batches
-        self.generate_and_combine_heatmaps(all_data, all_output, all_target)
+        self.generate_and_combine_heatmaps(all_data, all_output, all_target,results)
 
         test_loss /= ctr
         test_accuracy = float(correct) / ctr
