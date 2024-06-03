@@ -250,15 +250,17 @@ class PruningFineTuner:
                 data, target = data.cuda(), target.cuda()
             data, target = Variable(data), Variable(target)
 
-            self.model.zero_grad()
-            with torch.enable_grad():
+            self.model.no_grad()
+            with torch.no_grad():
                 output = self.model(data)
 
             test_loss += self.criterion(output, target).item()
+            
             # get the index of the max log-probability
             pred = output.data.max(1, keepdim=True)[1]
             correct += pred.eq(target.data.view_as(pred)).cpu().sum()
-            # print(f"True Label: {target},output: {output}")
+            
+            print(f"True Label: {target},output: {output}")
             ctr += len(pred)
 
         test_loss /= ctr
