@@ -72,13 +72,14 @@ class Net(nn.Module): #resnet by original article
         self.features = torch.nn.Sequential(
             *(list(original_model.children())[:-1]))
         num_ftrs = original_model.fc.in_features
-        self.classifier = nn.Linear(num_ftrs, num_classes)
+        original_model.fc=nn.Linear(num_ftrs, num_classes)
+        #self.classifier = nn.Linear(num_ftrs, num_classes)
         self.modelName = arch
 
     def forward(self, x):
         x = self.features(x)
         x = x.view(x.size(0), -1)
-        x = self.classifier(x)
+        #x = self.classifier(x)
         return x
 
 
