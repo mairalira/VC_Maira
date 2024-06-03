@@ -76,14 +76,9 @@ class Net(nn.Module): #resnet by original article
         self.modelName = arch
 
     def forward(self, x):
-        if hasattr(self, 'features'):
-            x = self.features(x)
-            x = x.view(x.size(0), -1)
-            x = self.classifier(x)
-
-        else:
-            x = self.model(x)
-
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
         return x
 
 
@@ -209,13 +204,15 @@ if __name__ == '__main__':
     # print(n(torch.zeros(2, 3, 32, 32)).shape)
 
     model = {
-        'alexnet': Net('alexnet'),
-        'vgg16': Net('VGG16'),
-        'resnet18': ResNet18(),
-        'resnet50': ResNet50(),
+        'alexnet': VGG_Alex('alexnet'),
+        'vgg16': VGG_Alex('VGG16'),
+        'resnet18': Net('resnet18'),
+        'resnet50': Net('resnet50'),
     }[args.arch.lower()]
 
     # n = Net() #vgg16 on cifar10 (32 * 32 * 3)
-    n = Net('resnet18')  # resnet on cifar10 (32 * 32 * 3)
+    #n = Net('resnet18')  # resnet on cifar10 (32 * 32 * 3)
     # x = Variable(torch.FloatTensor(2, 3, 40, 40))
-    print(n(torch.zeros(2, 3, 32, 32)).shape)
+    #print(n(torch.zeros(2, 3, 32, 32)).shape)
+    n = model
+    print(n(torch.zeros(2,3,32,32).shape)
