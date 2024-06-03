@@ -102,18 +102,18 @@ def get_cifar10(datapath='../../data/', download=True):
     '''
     Get CIFAR10 dataset
     '''
-    #normalize = transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010]) old
-    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) #new
+    normalize = transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010]) #old
+    #normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) #new
     # Cifar-10 Dataset
     train_dataset = datasets.CIFAR10(root=datapath,
                                      train=True,
                                      transform=transforms.Compose([
-                                         # transforms.RandomCrop(32, padding=4),
-                                         transforms.Resize(256),
-                                         transforms.CenterCrop(224),
+                                         transforms.RandomCrop(32, padding=4),
+                                         t# ransforms.Resize(256),
+                                         # transforms.CenterCrop(224),
                                          # transforms.RandomResizedCrop(224),
                                          # transforms.Resize(224),
-                                         # transforms.RandomHorizontalFlip(),
+                                         transforms.RandomHorizontalFlip(),
                                          transforms.ToTensor(),
                                          normalize
                                      ]),
@@ -126,51 +126,6 @@ def get_cifar10(datapath='../../data/', download=True):
                                         transforms.ToTensor(),
                                         normalize
                                     ]))
-    return train_dataset, test_dataset
-
-def get_catsvsdogs(datapath='../../data/', download=True):
-    '''
-    Included cats_vs_dogs as a dataset for testing
-    '''
-    # since cats_vs_dogs is not a built-in such as CIFAR10 dataset
-    
-    url = "https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip"
-    extract_root = os.path.join(datapath, 'cats_and_dogs_filtered')
-
-    if download:
-        download_and_extract_archive(url, download_root=datapath, extract_root=extract_root)
-    
-    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) #paramaters reference: https://www.kaggle.com/code/accountstatus/cat-v-dog-pytorch-using-torchvision/notebook
-    
-    # Cats vs Dogs Dataset
-
-    transform_train=transforms.Compose([
-                                        transforms.Resize((224,224)),
-                                        transforms.RandomHorizontalFlip(),
-                                        transforms.ToTensor(),
-                                        normalize
-                                        ])
-    
-    transform_test=transforms.Compose([
-                                        transforms.Resize((224,224)),
-                                        transforms.ToTensor(),
-                                        normalize
-                                        ])
-    
-    # Check if the additional 'catsvsdogs' directory exists in the datapath
-    if os.path.exists(os.path.join(datapath, 'cats_and_dogs_filtered')):
-        train_dir = os.path.join(datapath, 'cats_and_dogs_filtered', 'cats_and_dogs_filtered', 'train')
-        test_dir = os.path.join(datapath,'cats_and_dogs_filtered', 'cats_and_dogs_filtered', 'validation')
-
-    else:
-        # If 'catsvsdogs' directory does not exist, fall back to original paths
-        train_dir = os.path.join(extract_root, 'train')
-        test_dir = os.path.join(extract_root, 'validation')
-    
-
-    train_dataset = datasets.ImageFolder(root=train_dir, transform=transform_train)
-    test_dataset = datasets.ImageFolder(root=test_dir, transform=transform_test)
-    
     return train_dataset, test_dataset
     
 def get_imagenet(transform=None, root_dir=None):
