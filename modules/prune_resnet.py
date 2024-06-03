@@ -19,6 +19,9 @@ class PruningFineTuner:
         if args.cuda:
             torch.cuda.manual_seed(args.seed)
 
+        else:
+            args.cuda = False
+
         lrp_params_def1 = {
             'conv2d_ignorebias': True,
             'eltwise_eps': 1e-6,
@@ -157,7 +160,7 @@ class PruningFineTuner:
             data, target = Variable(data), Variable(target)
             self.train_batch(optimizer, batch_idx, data, target, rank_filters)
 
-        if self.save_loss == True and rank_filters == False: #save train_loss only during fine-tuning
+        if self.save_loss == True and not rank_filters:# == False: #save train_loss only during fine-tuning
             self.dt.loc[self.COUNT_TRAIN] = pd.Series({"ratio_pruned": self.ratio_pruned_filters,
                                                        "train_loss": self.train_loss / len(self.train_loader.dataset)})
             self.COUNT_TRAIN += 1
@@ -173,7 +176,7 @@ class PruningFineTuner:
 
         if rank_filters: #for pruning
             batch.requires_grad = True
-            if self.args.method_type == 'lrp' or self.args.method_type == 'weight':  # lrp_based
+            if self.args.method_type in ['lrp', 'weight']:  # lrp_based
                 with torch.enable_grad():
                     output = self.wrapper_model(batch)
 
@@ -199,7 +202,7 @@ class PruningFineTuner:
                     f"Sum of output {output.sum()}, input relevance {input_relevance.sum()}")
                 self.train_loss += self.criterion(output, label).item()
                 #
-                # #Save heatmap
+                #Save heatmap
                 # if batch_idx < 10:
                 #     filename = Path(
                 #         f"heatmaps/{args.arch}_trial{args.trialnum:02d}_batch{batch_idx:04d}_iter{epoch_idx:04d}.png")
