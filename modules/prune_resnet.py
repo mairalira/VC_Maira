@@ -17,6 +17,8 @@ class PruningFineTuner:
     def __init__(self, args, model):
         torch.manual_seed(args.seed)
         self.ratio_pruned_filters = 1.0
+        self.df = pd.DataFrame(columns=["ratio_pruned", "test_acc", "test_loss", "flops","params"])
+        self.dt = pd.DataFrame(columns=["ratio_pruned", "train_loss"])
         if args.cuda:
             torch.cuda.manual_seed(args.seed)
 
