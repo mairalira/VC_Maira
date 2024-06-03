@@ -175,6 +175,10 @@ class PruningFineTuner:
         if optimizer is not None:
             optimizer.zero_grad()
 
+        if rank_filters:  # for pruning
+            self.model.add_hooks()  # Add hooks for activations
+            self.model.add_backward_hooks()  # Add hooks for gradients
+
         with torch.enable_grad():
             output = self.model(batch)
 
@@ -205,16 +209,7 @@ class PruningFineTuner:
                 print(
                     f"Sum of output {output.sum()}, input relevance {input_relevance.sum()}")
                 self.train_loss += self.criterion(output, label).item()
-                #
-                #Save heatmap
-                # if batch_idx < 10:
-                #     filename = Path(
-                #         f"heatmaps/{args.arch}_trial{args.trialnum:02d}_batch{batch_idx:04d}_iter{epoch_idx:04d}.png")
-                #     if not filename.parent.exists():
-                #         filename.parent.mkdir()
-                #     torchvision.utils.save_image(input_relevance, filename,
-                #                                  normalize=True,
-                #                                  scale_each=True)
+              
             else:
                 with torch.enable_grad():
                     output = self.prunner.model(batch)
@@ -249,6 +244,8 @@ class PruningFineTuner:
         ctr = 0
         flop_value = 0
         param_value = 0
+
+        self.model.remove_hooks()  # Ensure hooks are removed during normal testing
 
         with torch.no_grad():
             for batch_idx, (data, target) in enumerate(self.test_loader):
@@ -383,16 +380,11 @@ class PruningFineTuner:
             self.model = model.cuda() if self.args.cuda else model
             assert self.total_num_filters() == number_of_filters - ((kk + 1) * num_filters_to_prune_per_iteration)#, self.total_num_filters()
 
-            ratio_pruned_filters = float(
-                self.total_num_filters()) / number_of_filters
+            ratio_pruned_filters = float(self.total_num_filters()) / number_of_filters
             print(f"Filters pruned: {100 * ratio_pruned_filters}%")
 
             # Update the ratio_pruned_filters before fine-tuning
             self.train(optimizer, epochs=10)
-            
-            #message = str(100 * ratio_pruned_filters) + "%"
-            #print("Filters prunned", str(message))
-            
             test_accuracy, test_loss, flop_value, param_value, target, output = self.test()  # I tested it after it was cut.
 
             self.ratio_pruned_filters = ratio_pruned_filters
