@@ -314,12 +314,12 @@ class PruningFineTuner:
             else:
                 continue
 
-    def prune(self):
+    def prune(self, args):
         self.save_loss = True
         self.model.eval()
 
         # Get the accuracy before pruning
-        #self.temp = 0
+        self.temp = 0
         test_accuracy, test_loss, flop_value, param_value = self.test()
 
         # Make sure all the layers are trainable
