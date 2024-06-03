@@ -16,6 +16,7 @@ from modules.prune_layer import prune_conv_layer
 class PruningFineTuner:
     def __init__(self, args, model):
         torch.manual_seed(args.seed)
+        self.ratio_pruned_filters = 1.0
         if args.cuda:
             torch.cuda.manual_seed(args.seed)
 
@@ -379,6 +380,9 @@ class PruningFineTuner:
             ratio_pruned_filters = float(
                 self.total_num_filters()) / number_of_filters
             print(f"Filters pruned: {100 * ratio_pruned_filters}%")
+
+            # Update the ratio_pruned_filters before fine-tuning
+            self.train(optimizer, epochs=10)
             
             #message = str(100 * ratio_pruned_filters) + "%"
             #print("Filters prunned", str(message))
