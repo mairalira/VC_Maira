@@ -215,4 +215,4 @@ if __name__ == '__main__':
     # x = Variable(torch.FloatTensor(2, 3, 40, 40))
     #print(n(torch.zeros(2, 3, 32, 32)).shape)
     n = model
-    print(n(torch.zeros(2,3,32,32).shape)
+    print(n(torch.zeros(2,3,32,32)).shape)
