@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 '''
 @reference: Seul-Ki Yeom et al., "Pruning by explaining: a novel criterion for deep neural network pruning," Pattern Recognition, 2020.
 @author: Seul-Ki Yeom, Philipp Seegerer, Sebastian Lapuschkin, Alexander Binder, Simon Wiedemann, Klaus-Robert Müller, Wojciech Samek
@@ -19,7 +18,7 @@ import modules.prune_vgg as modules_vgg
 
 def get_args():
     # Training settings
-    parser = argparse.ArgumentParser(description='PyTorch VGG16 based ImageNet')
+    parser = argparse.ArgumentParser(description='PyTorch ResNet50 based ImageNet')
 
     parser.add_argument('--arch', default='vgg16', metavar='ARCH',
                         help='model architecture: resnet18, resnet50, vgg16, alexnet')
@@ -61,7 +60,7 @@ def get_args():
                         help='Pruning step: 0.05 (5% for each step)')
 
     parser.add_argument('--data-type', type=str, default='cifar10', metavar='N',
-                        help='model architecture selection: cifar10/imagenet/catsvsdogs')
+                        help='model architecture selection: cifar10/imagenet')
     parser.add_argument('--save-dir', type=str, default='model', metavar='N',
                         help='saved directory')
 
@@ -139,15 +138,3 @@ if __name__ == '__main__':
         # Save the initial evaluation results
         fine_tuner.df.to_csv(results_file)
         fine_tuner.dt.to_csv(results_file_train)
-
-# Test model on CIFAR-10
-#print("Testing model on CIFAR-10...")
-#fine_tuner.setup_dataloaders(dataset_type='cifar10')  # Setup CIFAR-10 data loaders
-#cifar10_accuracy, cifar10_loss = fine_tuner.test()
-#print(f"CIFAR-10 Accuracy: {cifar10_accuracy}, CIFAR-10 Loss: {cifar10_loss}")
-
-# Test model on Cats vs. Dogs
-#print("Testing model on Cats vs. Dogs...")
-#fine_tuner.setup_dataloaders(dataset_type="catsvsdogs")  # Setup Cats vs. Dogs data loaders
-#catsvsdogs_accuracy, catsvsdogs_loss = fine_tuner.test()
-#print(f"Cats vs. Dogs Accuracy: {catsvsdogs_accuracy}, Cats vs. Dogs Loss: {catsvsdogs_loss}")
