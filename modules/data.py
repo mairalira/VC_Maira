@@ -109,7 +109,7 @@ def get_cifar10(datapath='../../data/', download=True):
                                      train=True,
                                      transform=transforms.Compose([
                                          transforms.RandomCrop(32, padding=4),
-                                         t# ransforms.Resize(256),
+                                         # transforms.Resize(256),
                                          # transforms.CenterCrop(224),
                                          # transforms.RandomResizedCrop(224),
                                          # transforms.Resize(224),
