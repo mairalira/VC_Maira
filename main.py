@@ -109,7 +109,7 @@ if __name__ == '__main__':
     if args.prune:
         print(f'Start pruning! Dataset: {args.data_type}, Architecture: {args.arch}, Pruning Method: {args.method_type},'
               f' Total Pruning rate: {args.total_pr}, Pruning step: {args.pr_step}')
-        fine_tuner.prune()
+        fine_tuner.prune(args)
     else:
         # If pruning is not performed, ensure initial evaluation and results saving
         print(f'Evaluating model without pruning.  Dataset: {args.data_type}, Architecture: {args.arch}')
