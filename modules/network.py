@@ -70,17 +70,37 @@ class Net(nn.Module): #resnet by original article
         original_model = models.__dict__[arch](weights=ResNet50_Weights.IMAGENET1K_V1)
 
         self.features = torch.nn.Sequential(
-            *(list(original_model.children())[:-1]))
+            *(list(original_model.children())[:-2])) #capture only until the last conv layer to support heatmap
         num_ftrs = original_model.fc.in_features
-        #original_model.fc=nn.Linear(num_ftrs, num_classes)
         self.classifier = nn.Linear(num_ftrs, num_classes)
         self.modelName = arch
-
+        
+        # Placeholder for gradients and activations
+        self.gradients = None
+        self.activations = None
+        self.hook_registered = False
+        
     def forward(self, x):
         x = self.features(x)
-        x = x.view(x.size(0), -1)
+        self.activations = x  # Save the activations
+        x = F.adaptive_avg_pool2d(x, (1, 1))
+        x = torch.flatten(x, 1)
         x = self.classifier(x)
         return x
+
+def save_gradient(self, grad):
+        self.gradients = grad
+
+def register_hooks(self):
+        if not self.hook_registered:
+            self.features[-1].register_backward_hook(lambda module, grad_in, grad_out: self.save_gradient(grad_out[0]))
+            self.hook_registered = True
+
+    def remove_hooks(self):
+        if self.hook_registered:
+            for handle in self.features[-1]._backward_hooks.values():
+                handle.remove()
+            self.hook_registered = False
 
 def set_parameter_requires_grad(model, feature_extracting):
     if feature_extracting:
