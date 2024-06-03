@@ -17,7 +17,7 @@ class PruningFineTuner:
     def __init__(self, args, model):
         torch.manual_seed(args.seed)
         self.ratio_pruned_filters = 1.0
-        self.df = pd.DataFrame(columns=["ratio_pruned", "test_acc", "test_loss", "flops","params"])
+        self.df = pd.DataFrame(columns=["ratio_pruned", "test_acc", "test_loss", "flops","params", "target", "output"])
         self.dt = pd.DataFrame(columns=["ratio_pruned", "train_loss"])
         if args.cuda:
             torch.cuda.manual_seed(args.seed)
@@ -147,7 +147,9 @@ class PruningFineTuner:
                                                         "test_acc": test_accuracy,
                                                         "test_loss": test_loss,
                                                         "flops": flop_value,
-                                                        "params": param_value
+                                                        "params": param_value, 
+                                                        "target": target,
+                                                        "output": output
                                                         })
                 self.COUNT_ROW += 1
 
@@ -262,7 +264,7 @@ class PruningFineTuner:
                 pred = output.data.max(1, keepdim=True)[1]
                 correct += pred.eq(target.data.view_as(pred)).cpu().sum()
                 
-                print(f"True Label: {target},output: {output}")
+                #print(f"True Label: {target},output: {output}")
                 ctr += len(pred)
 
         test_loss /= ctr
@@ -286,10 +288,10 @@ class PruningFineTuner:
             # print('Params:', self.num_param[-1])
             print(f'Flops: {flop_value}, Params: {param_value}')
 
-            return test_accuracy, test_loss, flop_value, param_value
+            return test_accuracy, test_loss, flop_value, param_value, target, output
 
         else:
-            return test_accuracy, test_loss, None, None
+            return test_accuracy, test_loss, None, None, target, output
 
     def get_candidates_to_prune(self, num_filters_to_prune, layer_type='conv'):
         self.prunner.reset()
@@ -326,7 +328,7 @@ class PruningFineTuner:
 
         # Get the accuracy before pruning
         self.temp = 0
-        test_accuracy, test_loss, flop_value, param_value = self.test()
+        test_accuracy, test_loss, flop_value, param_value, target, output = self.test()
 
         # Make sure all the layers are trainable
         for param in self.model.parameters():
@@ -340,13 +342,15 @@ class PruningFineTuner:
         self.ratio_pruned_filters = 1.0
         results_file = f"{args.save_dir}/scenario1_results_{self.args.data_type}_{self.args.arch}_{self.args.method_type}_trial{self.args.trialnum:02d}.csv"
         results_file_train = f"{args.save_dir}/scenario1_train_{self.args.data_type}_{self.args.arch}_{self.args.method_type}_trial{self.args.trialnum:02d}.csv"
-        self.df = pd.DataFrame(columns=["ratio_pruned", "test_acc", "test_loss", "flops","params"])
+        self.df = pd.DataFrame(columns=["ratio_pruned", "test_acc", "test_loss", "flops","params","target","output"])
         self.dt = pd.DataFrame(columns=["ratio_pruned", "train_loss"])
         self.df.loc[self.COUNT_ROW] = pd.Series({
                                                  "ratio_pruned": self.ratio_pruned_filters,
                                                  "test_acc": test_accuracy,
                                                  "test_loss": test_loss, "flops": flop_value,
-                                                 "params": param_value})
+                                                 "params": param_value,
+                                                 "target": target,
+                                                 "output": output,})
         self.COUNT_ROW += 1
         for kk in range(iterations):
             print("Ranking filters.. {}".format(kk))
@@ -389,14 +393,16 @@ class PruningFineTuner:
             #message = str(100 * ratio_pruned_filters) + "%"
             #print("Filters prunned", str(message))
             
-            test_accuracy, test_loss, flop_value, param_value = self.test()  # I tested it after it was cut.
+            test_accuracy, test_loss, flop_value, param_value, target, output = self.test()  # I tested it after it was cut.
 
             self.ratio_pruned_filters = ratio_pruned_filters
             self.df.loc[self.COUNT_ROW] = pd.Series({"ratio_pruned": ratio_pruned_filters,
                                                      "test_acc": test_accuracy,
                                                      "test_loss": test_loss,
                                                      "flops": flop_value,
-                                                     "params": param_value})
+                                                     "params": param_value,
+                                                     "target": target,
+                                                     "output": output})
             self.COUNT_ROW += 1
             self.df.to_csv(results_file)
 
@@ -418,6 +424,8 @@ class PruningFineTuner:
                                                  "test_acc": test_accuracy,
                                                  "test_loss": test_loss,
                                                  "flops": flop_value,
-                                                 "params": param_value})
+                                                 "params": param_value,
+                                                 "target": target,
+                                                 "output": output})
         self.df.to_csv(results_file)
 
