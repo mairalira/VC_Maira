@@ -78,7 +78,7 @@ class Net(nn.Module): #resnet by original article
         # Placeholder for gradients and activations
         self.gradients = None
         self.activations = None
-        self.hook_registered = False
+        self.hooks = []
         
     def forward(self, x):
         x = self.features(x)
@@ -88,19 +88,28 @@ class Net(nn.Module): #resnet by original article
         x = self.classifier(x)
         return x
 
-def save_gradient(self, grad):
-        self.gradients = grad
+    def add_hooks(self):
+        for layer in self.children():
+            if isinstance(layer, nn.Conv2d):
+                hook = layer.register_forward_hook(self.save_activation)
+                self.hooks.append(hook)
 
-def register_hooks(self):
-        if not self.hook_registered:
-            self.features[-1].register_backward_hook(lambda module, grad_in, grad_out: self.save_gradient(grad_out[0]))
-            self.hook_registered = True
+    def save_activation(self, module, input, output):
+        self.activations = output
+
+    def add_backward_hooks(self):
+        for layer in self.children():
+            if isinstance(layer, nn.Conv2d):
+                hook = layer.register_backward_hook(self.save_gradient)
+                self.hooks.append(hook)
+
+    def save_gradient(self, module, grad_input, grad_output):
+        self.gradients = grad_output[0]
 
     def remove_hooks(self):
-        if self.hook_registered:
-            for handle in self.features[-1]._backward_hooks.values():
-                handle.remove()
-            self.hook_registered = False
+        for hook in self.hooks:
+            hook.remove()
+        self.hooks = []
 
 def set_parameter_requires_grad(model, feature_extracting):
     if feature_extracting:
