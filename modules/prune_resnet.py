@@ -249,11 +249,9 @@ class PruningFineTuner:
             for batch_idx, (data, target) in enumerate(self.test_loader):
                 if self.args.cuda:
                     data, target = data.cuda(), target.cuda()
+                    
                 data, target = Variable(data), Variable(target)
-    
-                self.model.no_grad()
-                with torch.no_grad():
-                    output = self.model(data)
+                output = self.model(data)
     
                 test_loss += self.criterion(output, target).item()
                 
