@@ -1,4 +1,4 @@
-'''
+x'''
 @reference: Seul-Ki Yeom et al., "Pruning by explaining: a novel criterion for deep neural network pruning," Pattern Recognition, 2020.
 @author: Seul-Ki Yeom, Philipp Seegerer, Sebastian Lapuschkin, Alexander Binder, Simon Wiedemann, Klaus-Robert Müller, Wojciech Samek
 '''
@@ -113,10 +113,10 @@ if __name__ == '__main__':
         # If pruning is not performed, ensure initial evaluation and results saving
         print(f'Evaluating model without pruning.  Dataset: {args.data_type}, Architecture: {args.arch}')
         #args.save_loss=True
-        test_accuracy, test_loss, flop_value, param_value = fine_tuner.test()
+        test_accuracy, test_loss, flop_value, param_value, target, output  = fine_tuner.test()
 
         # Initialize the DataFrame to store results
-        fine_tuner.df = pd.DataFrame(columns=["ratio_pruned", "test_acc", "test_loss", "flops", "params"])
+        fine_tuner.df = pd.DataFrame(columns=["ratio_pruned", "test_acc", "test_loss", "flops", "params", "target", "output"])
         fine_tuner.dt = pd.DataFrame(columns=["epoch", "train_acc", "train_loss"])
 
         # Create a dictionary with evaluation results
@@ -125,7 +125,9 @@ if __name__ == '__main__':
                             "test_acc": test_accuracy,
                             "test_loss": test_loss,
                             "flops": flop_value,
-                            "params": param_value
+                            "params": param_value,
+                            "target": target,
+                            "output": output
                             }
         
         fine_tuner.df.loc[fine_tuner.COUNT_ROW] = pd.Series(evaluation_results)        
