@@ -125,7 +125,7 @@ class PruningFineTuner:
             
             try: #during training
                 self.train_epoch(optimizer=optimizer)
-                acc, _ = self.test()
+                acc, _, _, _, _, _ = self.test()
 
                 if acc > self.best_acc:
                     if not os.path.isdir('checkpoint'):
@@ -141,7 +141,7 @@ class PruningFineTuner:
             except Exception as e: #during fine-tuning
                 print(f'Exception during training: {e}')
                 self.train_epoch(optimizer=optimizer)
-                test_accuracy, test_loss, flop_value, param_value = self.test()
+                test_accuracy, test_loss, flop_value, param_value, target, output = self.test()
                 self.df.loc[self.COUNT_ROW] = pd.Series({
                                                         "ratio_pruned": self.ratio_pruned_filters,
                                                         "test_acc": test_accuracy,
