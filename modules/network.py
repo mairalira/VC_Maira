@@ -65,19 +65,24 @@ class VGG_Alex(nn.Module):
 class Net(nn.Module): #resnet by original article
     def __init__(self, arch):
         super(Net, self).__init__()
+        num_classes = 10
         # Model Selection
         original_model = models.__dict__[arch](weights=ResNet50_Weights.IMAGENET1K_V1)
 
         self.features = torch.nn.Sequential(
             *(list(original_model.children())[:-1]))
-        self.classifier = nn.Linear(in_features=list(original_model.children())[-1].in_features, out_features=10, bias=True)
+        num_ftrs = original_model.fc.in_features
+        self.classifier = nn.Linear(num_ftrs, num_classes)
         self.modelName = arch
 
     def forward(self, x):
+        if hasattr(self, 'features'):
+            x = self.features(x)
+            x = x.view(x.size(0), -1)
+            x = self.classifier(x)
 
-        x = self.features(x)
-        x = x.view(x.size(0), -1)
-        x = self.classifier(x)
+        else:
+            x = self.model(x)
 
         return x
 
