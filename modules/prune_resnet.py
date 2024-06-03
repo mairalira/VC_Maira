@@ -9,9 +9,11 @@ import os
 from collections import Counter
 import utils.lrp_general6 as lrp_alex
 from modules.resnet_kuangliu import ResNet18_kuangliu_c, ResNet50_kuangliu_c
+from modules.heatmap import generate_and_combine_heatmaps 
 import modules.flops_counter_mask as fcm
 import modules.flop as flop
 from modules.prune_layer import prune_conv_layer
+
 
 class PruningFineTuner:
     def __init__(self, args, model):
@@ -248,6 +250,9 @@ class PruningFineTuner:
         self.model.remove_hooks()  # Ensure hooks are removed during normal testing
 
         with torch.no_grad():
+            all_data = []
+            all_output = []
+            all_target = []
             for batch_idx, (data, target) in enumerate(self.test_loader):
                 if self.args.cuda:
                     data, target = data.cuda(), target.cuda()
@@ -260,9 +265,21 @@ class PruningFineTuner:
                 # get the index of the max log-probability
                 pred = output.data.max(1, keepdim=True)[1]
                 correct += pred.eq(target.data.view_as(pred)).cpu().sum()
+
+                all_data.append(data)
+                all_output.append(output)
+                all_target.append(target)
                 
                 #print(f"True Label: {target},output: {output}")
                 ctr += len(pred)
+
+        # Combine all data, output, and target tensors
+        all_data = torch.cat(all_data)
+        all_output = torch.cat(all_output)
+        all_target = torch.cat(all_target)
+
+        # Generate and combine heatmaps for all batches
+        self.generate_and_combine_heatmaps(all_data, all_output, all_target)
 
         test_loss /= ctr
         test_accuracy = float(correct) / ctr
