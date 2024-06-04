@@ -74,13 +74,26 @@ class Net(nn.Module): #resnet by original article
         num_ftrs = original_model.fc.in_features
         self.classifier = nn.Linear(num_ftrs, num_classes)
         self.modelName = arch
+        # For storing gradients and features
+        self.gradients = None
+        self.feature_maps = None
         
     def forward(self, x):
         x = self.features(x)
+        self.feature_maps = x #Store feature maps
         x = x.view(x.size(0),-1)
         x = self.classifier(x)
         return x
+        
+    def activations_hook(self, grad):
+        self.gradients = grad
 
+    def get_activations_gradient(self):
+        return self.gradients
+
+    def get_activations(self):
+        return self.feature_maps
+        
 def set_parameter_requires_grad(model, feature_extracting):
     if feature_extracting:
         for param in model.parameters():
