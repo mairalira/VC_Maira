@@ -70,46 +70,16 @@ class Net(nn.Module): #resnet by original article
         original_model = models.__dict__[arch](weights=ResNet50_Weights.IMAGENET1K_V1)
 
         self.features = torch.nn.Sequential(
-            *(list(original_model.children())[:-2])) #capture only until the last conv layer to support heatmap
+            *(list(original_model.children())[:-1])) 
         num_ftrs = original_model.fc.in_features
         self.classifier = nn.Linear(num_ftrs, num_classes)
         self.modelName = arch
         
-        # Placeholder for gradients and activations
-        self.gradients = None
-        self.activations = None
-        self.hooks = []
-        
     def forward(self, x):
         x = self.features(x)
-        self.activations = x  # Save the activations
-        x = F.adaptive_avg_pool2d(x, (1, 1))
-        x = torch.flatten(x, 1)
+        x = x.view(x.size(0),-1)
         x = self.classifier(x)
         return x
-
-    def add_hooks(self):
-        for layer in self.children():
-            if isinstance(layer, nn.Conv2d):
-                hook = layer.register_forward_hook(self.save_activation)
-                self.hooks.append(hook)
-
-    def save_activation(self, module, input, output):
-        self.activations = output
-
-    def add_backward_hooks(self):
-        for layer in self.children():
-            if isinstance(layer, nn.Conv2d):
-                hook = layer.register_backward_hook(self.save_gradient)
-                self.hooks.append(hook)
-
-    def save_gradient(self, module, grad_input, grad_output):
-        self.gradients = grad_output[0]
-
-    def remove_hooks(self):
-        for hook in self.hooks:
-            hook.remove()
-        self.hooks = []
 
 def set_parameter_requires_grad(model, feature_extracting):
     if feature_extracting:
@@ -209,30 +179,6 @@ class ResNet(nn.Module):
         out = self.linear(out)
         return out
 
-    def add_hooks(self):
-        for layer in self.children():
-            if isinstance(layer, nn.Conv2d):
-                hook = layer.register_forward_hook(self.save_activation)
-                self.hooks.append(hook)
-
-    def save_activation(self, module, input, output):
-        self.activations = output
-
-    def add_backward_hooks(self):
-        for layer in self.children():
-            if isinstance(layer, nn.Conv2d):
-                hook = layer.register_backward_hook(self.save_gradient)
-                self.hooks.append(hook)
-
-    def save_gradient(self, module, grad_input, grad_output):
-        self.gradients = grad_output[0]
-
-    def remove_hooks(self):
-        for hook in self.hooks:
-            hook.remove()
-        self.hooks = []
-
-
 def ResNet18():
     return ResNet(BasicBlock, [2, 2, 2, 2])
 
@@ -268,12 +214,9 @@ if __name__ == '__main__':
         'resnet50': Net('resnet50'),
     }[args.arch.lower()]
 
-    
-
     # n = Net() #vgg16 on cifar10 (32 * 32 * 3)
     #n = Net('resnet18')  # resnet on cifar10 (32 * 32 * 3)
     # x = Variable(torch.FloatTensor(2, 3, 40, 40))
     #print(n(torch.zeros(2, 3, 32, 32)).shape)
     n = model[args.arch.lower()]
-    n.add_hooks()
     print(n(torch.zeros(2,3,32,32)).shape)
