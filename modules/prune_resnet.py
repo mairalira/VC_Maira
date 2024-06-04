@@ -1,8 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torch.nn.functional as F
-import matplotlib.pyplot as plt
 from torch.autograd import Variable
 import modules.data as dataset
 from modules.filterprune import FilterPrunner
@@ -100,66 +98,6 @@ class PruningFineTuner:
 
         self.train_num = len(self.train_loader)
         self.test_num = len(self.test_loader)
-
-    def forward_pass(self, x):
-        return self.model(x)
-    
-    def get_cam_weights(self, features, grads):
-        pooled_grads = torch.mean(grads, dim=[0, 2, 3])
-        return pooled_grads
-
-    def generate_cam(self, input_tensor, target_class):
-        # Forward pass through the model
-        output = self.model(input_tensor)
-        target = output[0][target_class]
-        
-        # Backward pass to get gradients
-        self.model.zero_grad()
-        target.backward(retain_graph=True)
-        
-        # Get gradients and feature maps
-        grads = self.model.get_activations_gradient()
-        features = self.model.get_activations()
-        
-        weights = self.get_cam_weights(features, grads)
-        
-        cam = torch.zeros(features.shape[2:], dtype=torch.float32)
-        for i, w in enumerate(weights):
-            cam += w * features[0, i, :, :]
-        
-        cam = F.relu(cam)
-        cam = cam - cam.min()
-        cam = cam / cam.max()
-        cam = cam.detach().cpu().numpy()
-
-        return cam
-
-    def save_heatmap(self, heatmap, filename):
-        plt.imshow(heatmap, cmap='jet')
-        plt.colorbar()
-        plt.savefig(filename)
-        plt.close()
-
-    def generate_and_save_heatmaps(self, data, target, batch_idx):
-        results_dir = 'results'
-        os.makedirs(results_dir, exist_ok=True)
-
-        self.model.eval()
-
-        for batch_idx, (data, target) in enumerate(self.test_loader):
-            if self.args.cuda:
-                data, target = data.cuda(), target.cuda()
-
-            for i in range(data.size(0)):
-                input_tensor = data[i:i+1]
-                target_class = target[i].item()
-
-                cam = self.generate_cam(input_tensor, target_class)
-                filename = os.path.join(results_dir, f'heatmap_batch{batch_idx}_image{i}.png')
-                self.save_heatmap(cam, filename)
-
-            if batch_idx >= 10:  # Limit to first 10 batches to avoid excessive generation time
-                break  
     
     def total_num_filters(self):
         # count total number of filter in every conv layer
@@ -283,9 +221,6 @@ class PruningFineTuner:
                     batch_idx * len(batch), len(self.train_loader.dataset),
                     100. * batch_idx / len(self.train_loader)))
                 print(f"Sum of output {output.sum()}, input relevance {input_relevance.sum()}")
-                print(f"Output grad_fn: {output.grad_fn}, Input relevance grad_fn: {input_relevance.grad_fn}")
-                print(f"Output requires_grad: {output.requires_grad}, Input relevance requires_grad: {input_relevance.requires_grad}")
-
 
         else: #for normal training and fine-tuning
             loss = self.criterion(output, label)
@@ -317,9 +252,6 @@ class PruningFineTuner:
                 # get the index of the max log-probability
                 pred = output.data.max(1, keepdim=True)[1]
                 correct += pred.eq(target.data.view_as(pred)).cpu().sum()
-
-                # generate and save heatmap
-                self.generate_and_save_heatmaps(data, target, batch_idx)
                 
                 #print(f"True Label: {target},output: {output}")
                 ctr += len(pred)
