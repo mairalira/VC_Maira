@@ -256,7 +256,6 @@ class PruningFineTuner:
                 # Multiply output with target
                 lrp_anchor = output * T / (output * T).sum(dim=1, keepdim=True)
                 output.backward(lrp_anchor, retain_graph=True)
-                #
                 input_relevance = batch.grad
 
                 self.prunner.compute_filter_criterion(self.layer_type, criterion=self.args.method_type)
@@ -283,8 +282,10 @@ class PruningFineTuner:
                 print('Train Epoch: [{}/{} ({:.0f}%)]'.format(
                     batch_idx * len(batch), len(self.train_loader.dataset),
                     100. * batch_idx / len(self.train_loader)))
-                print(
-                    f"Sum of output {output.sum()}, input relevance {input_relevance.sum()}")
+                print(f"Sum of output {output.sum()}, input relevance {input_relevance.sum()}")
+                print(f"Output grad_fn: {output.grad_fn}, Input relevance grad_fn: {input_relevance.grad_fn}")
+                print(f"Output requires_grad: {output.requires_grad}, Input relevance requires_grad: {input_relevance.requires_grad}")
+
 
         else: #for normal training and fine-tuning
             loss = self.criterion(output, label)
@@ -294,7 +295,7 @@ class PruningFineTuner:
                 batch_idx * len(batch), len(self.train_loader.dataset),
                 100. * batch_idx / len(self.train_loader), loss.item()))
             self.train_loss += loss.item()
-
+            
     def test(self):
         self.model.eval()
         test_loss = 0
