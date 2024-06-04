@@ -140,7 +140,7 @@ class PruningFineTuner:
         plt.savefig(filename)
         plt.close()
 
-    def generate_and_save_heatmaps(self):
+    def generate_and_save_heatmaps(self, data, target, batch_idx):
         results_dir = 'results'
         os.makedirs(results_dir, exist_ok=True)
 
