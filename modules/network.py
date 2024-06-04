@@ -268,9 +268,12 @@ if __name__ == '__main__':
         'resnet50': Net('resnet50'),
     }[args.arch.lower()]
 
+    
+
     # n = Net() #vgg16 on cifar10 (32 * 32 * 3)
     #n = Net('resnet18')  # resnet on cifar10 (32 * 32 * 3)
     # x = Variable(torch.FloatTensor(2, 3, 40, 40))
     #print(n(torch.zeros(2, 3, 32, 32)).shape)
-    n = model
+    n = model[args.arch.lower()]
+    n.add_hooks()
     print(n(torch.zeros(2,3,32,32)).shape)
