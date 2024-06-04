@@ -74,25 +74,12 @@ class Net(nn.Module): #resnet by original article
         num_ftrs = original_model.fc.in_features
         self.classifier = nn.Linear(num_ftrs, num_classes)
         self.modelName = arch
-        # For storing gradients and features
-        self.gradients = None
-        self.feature_maps = None
-        
+
     def forward(self, x):
         x = self.features(x)
-        self.feature_maps = x #Store feature maps
         x = x.view(x.size(0),-1)
         x = self.classifier(x)
         return x
-        
-    def activations_hook(self, grad):
-        self.gradients = grad
-
-    def get_activations_gradient(self):
-        return self.gradients
-
-    def get_activations(self):
-        return self.feature_maps
         
 def set_parameter_requires_grad(model, feature_extracting):
     if feature_extracting:
@@ -170,8 +157,6 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(block, 512, num_blocks[3], stride=2)
         self.linear = nn.Linear(512*block.expansion, num_classes)
 
-        self.feature_maps = None
-
     def _make_layer(self, block, planes, num_blocks, stride):
         strides = [stride] + [1]*(num_blocks-1)
         layers = []
@@ -186,9 +171,6 @@ class ResNet(nn.Module):
         out = self.layer2(out)
         out = self.layer3(out)
         out = self.layer4(out)
-
-        self.feature_maps=out #to store feature maps
-        
         out = F.avg_pool2d(out, 4)
         out = out.view(out.size(0), -1)
         out = self.linear(out)
