@@ -149,8 +149,8 @@ class PruningFineTuner:
                                                         "test_loss": test_loss,
                                                         "flops": flop_value,
                                                         "params": param_value, 
-                                                        "target": target,
-                                                        "output": output
+                                                        "target": target.cpu().numpy(),
+                                                        "output": output.cpu().numpy()
                                                         })
                 self.COUNT_ROW += 1
 
@@ -339,10 +339,11 @@ class PruningFineTuner:
         self.df.loc[self.COUNT_ROW] = pd.Series({
                                                  "ratio_pruned": self.ratio_pruned_filters,
                                                  "test_acc": test_accuracy,
-                                                 "test_loss": test_loss, "flops": flop_value,
+                                                 "test_loss": test_loss, 
+                                                 "flops": flop_value,
                                                  "params": param_value,
-                                                 "target": target,
-                                                 "output": output,})
+                                                 "target": target.cpu().numpy(),
+                                                 "output": output.cpu().numpy(),})
         self.COUNT_ROW += 1
         for kk in range(iterations):
             print("Ranking filters.. {}".format(kk))
@@ -388,8 +389,8 @@ class PruningFineTuner:
                                                      "test_loss": test_loss,
                                                      "flops": flop_value,
                                                      "params": param_value,
-                                                     "target": target,
-                                                     "output": output})
+                                                     "target": target.cpu().numpy(),
+                                                     "output": output.cpu().numpy()})
             self.COUNT_ROW += 1
             self.df.to_csv(results_file)
 
@@ -412,7 +413,7 @@ class PruningFineTuner:
                                                  "test_loss": test_loss,
                                                  "flops": flop_value,
                                                  "params": param_value,
-                                                 "target": target,
-                                                 "output": output})
+                                                 "target": target.cpu().numpy(),
+                                                 "output": output.cpu().numpy()})
         self.df.to_csv(results_file)
 
