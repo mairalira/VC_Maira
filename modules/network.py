@@ -209,6 +209,29 @@ class ResNet(nn.Module):
         out = self.linear(out)
         return out
 
+    def add_hooks(self):
+        for layer in self.children():
+            if isinstance(layer, nn.Conv2d):
+                hook = layer.register_forward_hook(self.save_activation)
+                self.hooks.append(hook)
+
+    def save_activation(self, module, input, output):
+        self.activations = output
+
+    def add_backward_hooks(self):
+        for layer in self.children():
+            if isinstance(layer, nn.Conv2d):
+                hook = layer.register_backward_hook(self.save_gradient)
+                self.hooks.append(hook)
+
+    def save_gradient(self, module, grad_input, grad_output):
+        self.gradients = grad_output[0]
+
+    def remove_hooks(self):
+        for hook in self.hooks:
+            hook.remove()
+        self.hooks = []
+
 
 def ResNet18():
     return ResNet(BasicBlock, [2, 2, 2, 2])
