@@ -263,7 +263,7 @@ class PruningFineTuner:
 
             # Generate and save Grad-CAM heatmaps
             for i in range(data.size(0)):
-                heatmap = cam_extractor(input_tensor=data[i].unsqueeze(0), class_idx=int(pred[i]))
+                heatmap = cam_extractor(class_idx=int(pred[i]), scores=output)
                 img = to_pil_image(data[i].cpu())
                 heatmap_img = to_pil_image(heatmap.squeeze(0).cpu())
                 
