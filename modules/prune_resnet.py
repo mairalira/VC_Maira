@@ -252,11 +252,11 @@ class PruningFineTuner:
                 data, target = data.cuda(), target.cuda()
                 
             data, target = Variable(data), Variable(target)
+            
+            output=self.model(data)
 
             #Enable gradient calculation to get GradCAM heatmaps
             data.requires_grad=True
-            
-            output=self.model(data)
 
             test_loss += self.criterion(output, target).item()
             
