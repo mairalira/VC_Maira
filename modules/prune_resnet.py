@@ -252,8 +252,9 @@ class PruningFineTuner:
             data, target = Variable(data), Variable(target)
 
             #Enable gradient calculation to get GradCAM heatmaps
-            with torch.enable_grad():
-                output = self.model(data)
+            data.requires_grad=True
+            
+            output=self.model(data)
 
             test_loss += self.criterion(output, target).item()
             
@@ -263,15 +264,16 @@ class PruningFineTuner:
 
             # Generate and save Grad-CAM heatmaps
             for i in range(data.size(0)):
-                heatmap = cam_extractor(class_idx=int(pred[i]), scores=output)
-                img = to_pil_image(data[i].cpu())
-                heatmap_img = to_pil_image(heatmap.squeeze(0).cpu())
+                heatmaps = cam_extractor(class_idx=int(pred[i]), scores=output)
                 
-                # Overlay heatmap on the image
+                for j, heatmap in enumerate(heatmaps):
+                img = to_pil_image(data[i].cpu())
+                heatmap_img = to_pil_image(heatmap.cpu())
+
                 plt.imshow(img)
                 plt.imshow(heatmap_img, cmap='jet', alpha=0.5)
                 plt.axis('off')
-                plt.savefig(f'results/heatmap_{batch_idx}_{i}.png')
+                plt.savefig(f'results/heatmap_{batch_idx}_{i}_{j}.png')
                 plt.close()
                 
             ctr += len(pred)
