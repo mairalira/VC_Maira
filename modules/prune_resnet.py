@@ -278,9 +278,10 @@ class PruningFineTuner:
 
                     # Convert to grayscale image
                     heatmap_img = np.uint8(255 * cam_numpy)  # Scale to 0-255 and convert to uint8
+                    heatmap_img_2d = heatmap_img[:,:,0]
                     
                     # Convert numpy array to PIL image
-                    heatmap_pil = Image.fromarray(heatmap_img, mode='L')  # 'L' mode for grayscale
+                    heatmap_pil = Image.fromarray(heatmap_img_2d, mode='L')  # 'L' mode for grayscale
                     
                     # Overlay heatmap on the original image
                     result = overlay_mask(to_pil_image(data[i].cpu()), heatmap_pil, alpha=0.5)
