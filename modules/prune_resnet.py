@@ -267,14 +267,14 @@ class PruningFineTuner:
                 heatmaps = cam_extractor(class_idx=int(pred[i]), scores=output)
                 
                 for j, heatmap in enumerate(heatmaps):
-                img = to_pil_image(data[i].cpu())
-                heatmap_img = to_pil_image(heatmap.cpu())
-
-                plt.imshow(img)
-                plt.imshow(heatmap_img, cmap='jet', alpha=0.5)
-                plt.axis('off')
-                plt.savefig(f'results/heatmap_{batch_idx}_{i}_{j}.png')
-                plt.close()
+                    img = to_pil_image(data[i].cpu())
+                    heatmap_img = to_pil_image(heatmap.cpu())
+    
+                    plt.imshow(img)
+                    plt.imshow(heatmap_img, cmap='jet', alpha=0.5)
+                    plt.axis('off')
+                    plt.savefig(f'results/heatmap_{batch_idx}_{i}_{j}.png')
+                    plt.close()
                 
             ctr += len(pred)
             
