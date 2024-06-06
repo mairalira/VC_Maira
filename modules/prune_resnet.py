@@ -245,7 +245,7 @@ class PruningFineTuner:
         flop_value = 0
         param_value = 0
 
-        cam_extractor = GradCAM(self.model, target_layer='layer4')  
+        cam_extractor = GradCAM(self.model, target_layer='layer4',enable_hooks=False)  
 
         for batch_idx, (data, target) in enumerate(self.test_loader):
             if self.args.cuda:
@@ -266,34 +266,19 @@ class PruningFineTuner:
 
             # Generate and save Grad-CAM heatmaps
             for i in range(data.size(0)):
-                # Collect CAMs
-                cams = cam_extractor(class_idx=int(pred[i]), scores=output)
+                scores=output.clone().detach()
+                scores.requires_grad_(True)
+                # Compte activation map
+                activation_map = cam_extractor(class_idx=int(pred[i]), scores=scores)[0].squeeze(0).cpu()                ]                
+                # Convert it to PIL image
+                heatmap=to_pil_image(activation_map, mode="F")
                 
-                # Process each CAM
-                for cam in cams:
-                    cam = cam.squeeze(0) #each cam has a single channel now
-                    cam = (cam - cam.min()) / (cam.max() - cam.min()) #normalize each cam
-
-                    cam_numpy=cam.cpu().numpy()
-
-                    # Convert to grayscale image
-                    heatmap_img = np.uint8(255 * cam_numpy)  # Scale to 0-255 and convert to uint8
-                    heatmap_img_2d = heatmap_img[:,:,0]
-                    
-                    # Convert numpy array to PIL image
-                    heatmap_pil = Image.fromarray(heatmap_img_2d, mode='L')  # 'L' mode for grayscale
-                    
-                    # Overlay heatmap on the original image
-                    result = overlay_mask(to_pil_image(data[i].cpu()), heatmap_pil, alpha=0.5)
-                    
-                    # Display or save the result as needed
-                    plt.imshow(result)
-                    plt.axis('off')
-                    plt.title(f'Heatmap {batch_idx}_{i}')
-                    plt.savefig(f'results/heatmap_{batch_idx}_{i}.png')
-                    plt.close()
+                plt.imshow(result)
+                plt.axis('off')
+                plt.title(f'Heatmap {batch_idx}_{i}')
+                plt.savefig(f'results/heatmap_{batch_idx}_{i}.png')
+                plt.close()
         
-                
             ctr += len(pred)
             
         test_loss /= ctr
