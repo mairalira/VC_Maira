@@ -17,6 +17,7 @@ import numpy as np
 from torchcam.methods import CAM, GradCAM
 from torchvision.transforms.functional import to_pil_image
 import matplotlib.pyplot as plt
+from PIL import Image
 
 class PruningFineTuner:
     def __init__(self, args, model):
