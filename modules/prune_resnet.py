@@ -243,9 +243,8 @@ class PruningFineTuner:
         flop_value = 0
         param_value = 0
 
-        cam_extractor = GradCAM(self.model, target_layer='layer4')  # You can also use CAM if needed
+        cam_extractor = GradCAM(self.model, target_layer='layer4')  
 
-        #with torch.no_grad():
         for batch_idx, (data, target) in enumerate(self.test_loader):
             if self.args.cuda:
                 data, target = data.cuda(), target.cuda()
@@ -264,7 +263,7 @@ class PruningFineTuner:
 
             # Generate and save Grad-CAM heatmaps
             for i in range(data.size(0)):
-                heatmap = cam_extractor(data[i].unsqueeze(0), class_idx=int(pred[i]))
+                heatmap = cam_extractor(input_tensor=data[i].unsqueeze(0), class_idx=int(pred[i]))
                 img = to_pil_image(data[i].cpu())
                 heatmap_img = to_pil_image(heatmap.squeeze(0).cpu())
                 
