@@ -13,7 +13,7 @@ import modules.flops_counter_mask as fcm
 import modules.flop as flop
 from modules.prune_layer import prune_conv_layer
 
-from torchcam.cams import CAM, GradCAM
+from torchcam.methods import CAM, GradCAM
 from torchvision.transforms.functional import to_pil_image
 import matplotlib.pyplot as plt
 
