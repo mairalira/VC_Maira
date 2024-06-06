@@ -264,12 +264,13 @@ class PruningFineTuner:
 
             # Generate and save Grad-CAM heatmaps
             for i in range(data.size(0)):
+                # Collect CAMs
                 cams = cam_extractor(class_idx=int(pred[i]), scores=output)
                 
                 # Process each CAM
                 for cam in cams:
-                    cam = cam.squeeze(0)
-                    cam = (cam - cam.min()) / (cam.max() - cam.min())
+                    cam = cam.squeeze(0) #each cam has a single channel now
+                    cam = (cam - cam.min()) / (cam.max() - cam.min()) #normalize each cam
                     
                     img = to_pil_image(data[i].cpu())
                     cam_img = to_pil_image(cam.cpu(), mode='F')
@@ -279,7 +280,7 @@ class PruningFineTuner:
                     plt.imshow(result)
                     plt.axis('off')
                     plt.title(f'Heatmap {batch_idx}_{i}')
-                    plt.savefig(f'heatmap_{batch_idx}_{i}.png')
+                    plt.savefig(f'results/heatmap_{batch_idx}_{i}.png')
                     plt.close()
                 
             ctr += len(pred)
