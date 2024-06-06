@@ -272,17 +272,24 @@ class PruningFineTuner:
                     cam = cam.squeeze(0) #each cam has a single channel now
                     cam = (cam - cam.min()) / (cam.max() - cam.min()) #normalize each cam
 
-                    print("Heatmap shape:", cam.shape)
-                    img = to_pil_image(data[i].cpu())
-                    cam_img = to_pil_image(cam.cpu(), mode='F')
+                    cam_numpy=cam.cpu().numpy()
+
+                    # Convert to grayscale image
+                    heatmap_img = np.uint8(255 * cam_numpy)  # Scale to 0-255 and convert to uint8
                     
-                    result = overlay_mask(img, cam_img, alpha=0.5)
+                    # Convert numpy array to PIL image
+                    heatmap_pil = Image.fromarray(heatmap_img, mode='L')  # 'L' mode for grayscale
                     
+                    # Overlay heatmap on the original image
+                    result = overlay_mask(to_pil_image(data[i].cpu()), heatmap_pil, alpha=0.5)
+                    
+                    # Display or save the result as needed
                     plt.imshow(result)
                     plt.axis('off')
                     plt.title(f'Heatmap {batch_idx}_{i}')
                     plt.savefig(f'results/heatmap_{batch_idx}_{i}.png')
                     plt.close()
+        
                 
             ctr += len(pred)
             
