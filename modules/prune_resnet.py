@@ -271,7 +271,8 @@ class PruningFineTuner:
                 for cam in cams:
                     cam = cam.squeeze(0) #each cam has a single channel now
                     cam = (cam - cam.min()) / (cam.max() - cam.min()) #normalize each cam
-                    
+
+                    print("Heatmap shape:", cam.shape)
                     img = to_pil_image(data[i].cpu())
                     cam_img = to_pil_image(cam.cpu(), mode='F')
                     
