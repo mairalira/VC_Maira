@@ -264,16 +264,22 @@ class PruningFineTuner:
 
             # Generate and save Grad-CAM heatmaps
             for i in range(data.size(0)):
-                heatmaps = cam_extractor(class_idx=int(pred[i]), scores=output)
+                cams = cam_extractor(class_idx=int(pred[i]), scores=output)
                 
-                for j, heatmap in enumerate(heatmaps):
+                # Process each CAM
+                for cam in cams:
+                    cam = cam.squeeze(0)
+                    cam = (cam - cam.min()) / (cam.max() - cam.min())
+                    
                     img = to_pil_image(data[i].cpu())
-                    heatmap_img = to_pil_image(heatmap.cpu())
-    
-                    plt.imshow(img)
-                    plt.imshow(heatmap_img, cmap='jet', alpha=0.5)
+                    cam_img = to_pil_image(cam.cpu(), mode='F')
+                    
+                    result = overlay_mask(img, cam_img, alpha=0.5)
+                    
+                    plt.imshow(result)
                     plt.axis('off')
-                    plt.savefig(f'results/heatmap_{batch_idx}_{i}_{j}.png')
+                    plt.title(f'Heatmap {batch_idx}_{i}')
+                    plt.savefig(f'heatmap_{batch_idx}_{i}.png')
                     plt.close()
                 
             ctr += len(pred)
