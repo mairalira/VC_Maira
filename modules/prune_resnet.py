@@ -269,7 +269,7 @@ class PruningFineTuner:
                 scores=output.clone().detach()
                 scores.requires_grad_(True)
                 # Compte activation map
-                activation_map = cam_extractor(class_idx=int(pred[i]), scores=scores)[0].squeeze(0).cpu()                ]                
+                activation_map = cam_extractor(class_idx=int(pred[i]), scores=scores)[0].squeeze(0).cpu()                              
                 # Convert it to PIL image
                 heatmap=to_pil_image(activation_map, mode="F")
                 
