@@ -245,35 +245,38 @@ class PruningFineTuner:
 
         cam_extractor = GradCAM(self.model, target_layer='layer4')  # You can also use CAM if needed
 
-        with torch.no_grad():
-            for batch_idx, (data, target) in enumerate(self.test_loader):
-                if self.args.cuda:
-                    data, target = data.cuda(), target.cuda()
-                    
-                data, target = Variable(data), Variable(target)
-                output = self.model(data)
-    
-                test_loss += self.criterion(output, target).item()
+        #with torch.no_grad():
+        for batch_idx, (data, target) in enumerate(self.test_loader):
+            if self.args.cuda:
+                data, target = data.cuda(), target.cuda()
                 
-                # get the index of the max log-probability
-                pred = output.data.max(1, keepdim=True)[1]
-                correct += pred.eq(target.data.view_as(pred)).cpu().sum()
+            data, target = Variable(data), Variable(target)
 
-                # Generate and save Grad-CAM heatmaps
-                for i in range(data.size(0)):
-                    heatmap = cam_extractor(data[i].unsqueeze(0), class_idx=int(pred[i]))
-                    img = to_pil_image(data[i].cpu())
-                    heatmap_img = to_pil_image(heatmap.squeeze(0).cpu())
-                    
-                    # Overlay heatmap on the image
-                    plt.imshow(img)
-                    plt.imshow(heatmap_img, cmap='jet', alpha=0.5)
-                    plt.axis('off')
-                    plt.savefig(f'results/heatmap_{batch_idx}_{i}.png')
-                    plt.close()
-                    
-                ctr += len(pred)
+            #Enable gradient calculation to get GradCAM heatmaps
+            with torch.enable_grad():
+                output = self.model(data)
+
+            test_loss += self.criterion(output, target).item()
+            
+            # get the index of the max log-probability
+            pred = output.data.max(1, keepdim=True)[1]
+            correct += pred.eq(target.data.view_as(pred)).cpu().sum()
+
+            # Generate and save Grad-CAM heatmaps
+            for i in range(data.size(0)):
+                heatmap = cam_extractor(data[i].unsqueeze(0), class_idx=int(pred[i]))
+                img = to_pil_image(data[i].cpu())
+                heatmap_img = to_pil_image(heatmap.squeeze(0).cpu())
                 
+                # Overlay heatmap on the image
+                plt.imshow(img)
+                plt.imshow(heatmap_img, cmap='jet', alpha=0.5)
+                plt.axis('off')
+                plt.savefig(f'results/heatmap_{batch_idx}_{i}.png')
+                plt.close()
+                
+            ctr += len(pred)
+            
         test_loss /= ctr
         test_accuracy = float(correct) / ctr
         print(
