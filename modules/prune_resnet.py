@@ -266,17 +266,18 @@ class PruningFineTuner:
                 #Enable gradient calculation to get GradCAM heatmaps
                 data.requires_grad=True
 
-                activation_map=cam_extractor(output, class_idx=target[i])[0].squeeze(0).cpu()
-
-                heatmap = to_pil_image(activation_map, mode="F")
-
-                result = overlay_mask(to_pil_image(data[i].cpu()), heatmap, alpha=self.args.alpha)
-                
-                plt.imshow(result)
-                plt.axis('off')
-                plt.title(f'Heatmap {batch_idx}_{i}')
-                plt.savefig(f'results/heatmap_{batch_idx}_{i}.png')
-                plt.close()
+                for class_idx in target[i]:
+                    activation_map=cam_extractor(output, class_idx=class_idx)[0].squeeze(0).cpu()
+    
+                    heatmap = to_pil_image(activation_map, mode="F")
+    
+                    result = overlay_mask(to_pil_image(data[i].cpu()), heatmap, alpha=self.args.alpha)
+                    
+                    plt.imshow(result)
+                    plt.axis('off')
+                    plt.title(f'Heatmap {batch_idx}_{i}')
+                    plt.savefig(f'results/heatmap_{batch_idx}_{i}.png')
+                    plt.close()
         
             ctr += len(pred)
             
