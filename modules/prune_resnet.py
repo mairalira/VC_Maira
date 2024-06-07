@@ -246,6 +246,8 @@ class PruningFineTuner:
         flop_value = 0
         param_value = 0
 
+        print(self.model)
+        
         cam_extractor = GradCAM(self.model, target_layer='layer4')  
 
         for batch_idx, (data, target) in enumerate(self.test_loader):
