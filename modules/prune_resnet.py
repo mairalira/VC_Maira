@@ -246,14 +246,12 @@ class PruningFineTuner:
         flop_value = 0
         param_value = 0
 
+        self.model.to(self.args.device)
         
-        cam_extractor = GradCAM(self.model, target_layer='layer4.0.conv3', enable_hooks=False).to(self.args.device)
+        cam_extractor = GradCAM(self.model, target_layer='layer4.0.conv3', enable_hooks=False)
 
         for batch_idx, (data, target) in enumerate(self.test_loader):
-            if self.args.cuda:
-                data, target = data.cuda(), target.cuda()
-
-            #data.requires_grad = True
+            data, target = data.to(self.args.device), target.to(self.args.device)
             data, target = Variable(data), Variable(target)
 
             # Forward pass
@@ -263,22 +261,13 @@ class PruningFineTuner:
             test_loss += self.criterion(output, target).item()
 
             # get the index of the max log-probability
-            pred = output.data.max(dim=1, keepdim=True)#[1]
+            pred = output.argmax(dim=1, keepdim=True)
             correct += pred.eq(target.data.view_as(pred)).sum().item()
             
             for i in range(len(data)):
                 class_idx=int(pred[i])
-                #scores=output.clone().detach()
-                #scores.requires_grad = True
+                activation_map=cam_extractor(data[i].unsqueeze(0), class_idx)
 
-                #self.model.zero_grad()
-
-                #class_score = scores[i, class_idx]
-                #class_score.backward(retain_graph=True)
-
-                activation_map=cam_extractor(data, class_idx)
-                #print("Activation Map Shape:", activation_map.shape)
-                
                 heatmap = to_pil_image(activation_map, mode="F")
     
                 result = overlay_mask(to_pil_image(data[i]), heatmap, alpha=0.5)
