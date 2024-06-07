@@ -248,19 +248,19 @@ class PruningFineTuner:
 
         cam_extractor = GradCAM(self.model, target_layer='layer4',enable_hooks=False)  
 
+        test_loss += self.criterion(output, target).item()
+
+        # get the index of the max log-probability
+        pred = output.data.max(1, keepdim=True)[1]
+        correct += pred.eq(target.data.view_as(pred)).cpu().sum()
+
         for batch_idx, (data, target) in enumerate(self.test_loader):
             if self.args.cuda:
                 data, target = data.cuda(), target.cuda()
                 
             data, target = Variable(data), Variable(target)
             output=self.model(data)
-
-            test_loss += self.criterion(output, target).item()
             
-            # get the index of the max log-probability
-            pred = output.data.max(1, keepdim=True)[1]
-            correct += pred.eq(target.data.view_as(pred)).cpu().sum()
-
             for i in range(data.size(0)):
                 #Enable gradient calculation to get GradCAM heatmaps
                 data.requires_grad=True
