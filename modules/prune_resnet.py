@@ -246,7 +246,7 @@ class PruningFineTuner:
         flop_value = 0
         param_value = 0
 
-        cam_extractor = GradCAM(self.model, target_layer='layer4',enable_hooks=False)  
+        cam_extractor = GradCAM(self.model, target_layer='layer4', enable_hooks=False)  
 
         for batch_idx, (data, target) in enumerate(self.test_loader):
             if self.args.cuda:
@@ -270,6 +270,10 @@ class PruningFineTuner:
                 class_idx=int(pred[i])
                 scores=output.clone().detach()
                 scores.requires_grad = True
+
+                self.model.zero_grad()
+
+                scores[:, class_idx].backward(retain_graph=True)
                 
                 activation_map=cam_extractor(scores=scores, class_idx=class_idx)[0].squeeze(0).cpu()
     
