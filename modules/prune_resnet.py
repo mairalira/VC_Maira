@@ -246,7 +246,7 @@ class PruningFineTuner:
         flop_value = 0
         param_value = 0
 
-        cam_extractor = GradCAM(self.model, target_layer='layer4', enable_hooks=False)  
+        cam_extractor = GradCAM(self.model, target_layer='layer4')  
 
         for batch_idx, (data, target) in enumerate(self.test_loader):
             if self.args.cuda:
@@ -255,8 +255,10 @@ class PruningFineTuner:
             data.requires_grad = True
             data, target = Variable(data), Variable(target)
 
+            # Forward pass
             output=self.model(data)
 
+            # Test loss
             test_loss += self.criterion(output, target).item()
 
             # get the index of the max log-probability
@@ -264,7 +266,6 @@ class PruningFineTuner:
             correct += pred.eq(target.data.view_as(pred)).cpu().sum()
             
             for i in range(data.size(0)):
-                
                 class_idx=int(pred[i])
                 scores=output.clone().detach()
                 scores.requires_grad = True
