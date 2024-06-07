@@ -260,27 +260,26 @@ class PruningFineTuner:
             # get the index of the max log-probability
             pred = output.data.max(1, keepdim=True)[1]
             correct += pred.eq(target.data.view_as(pred)).cpu().sum()
+
+            #Enable gradient calculation to get GradCAM heatmaps
+            data.requires_grad=True
             
             for i in range(data.size(0)):
-                #Enable gradient calculation to get GradCAM heatmaps
-                data.requires_grad=True
-
-                if not torch.is_tensor(target):
-                    target = torch.tensor([target])
-
-                for class_idx in target:
-                    activation_map=cam_extractor(output, class_idx=class_idx)[0].squeeze(0).cpu()
+                # ensure target is correcctly indexed
+                class_idx=int(pred[i])
+                
+                activation_map=cam_extractor(scores=output, class_idx=class_idx)[0].squeeze(0).cpu()
     
-                    heatmap = to_pil_image(activation_map, mode="F")
+                heatmap = to_pil_image(activation_map, mode="F")
     
-                    result = overlay_mask(to_pil_image(data[i].cpu()), heatmap, alpha=self.args.alpha)
-                    
-                    plt.imshow(result)
-                    plt.axis('off')
-                    plt.title(f'Heatmap {batch_idx}_{i}')
-                    plt.savefig(f'results/heatmap_{batch_idx}_{i}.png')
-                    plt.close()
-        
+                result = overlay_mask(to_pil_image(data[i].cpu()), heatmap, alpha=self.args.alpha)
+                
+                plt.imshow(result)
+                plt.axis('off')
+                plt.title(f'Heatmap {batch_idx}_{i}')
+                plt.savefig(f'results/heatmap_{batch_idx}_{i}.png')
+                plt.close()
+
             ctr += len(pred)
             
         test_loss /= ctr
