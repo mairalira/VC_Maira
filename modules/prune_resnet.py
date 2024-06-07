@@ -251,7 +251,8 @@ class PruningFineTuner:
         for batch_idx, (data, target) in enumerate(self.test_loader):
             if self.args.cuda:
                 data, target = data.cuda(), target.cuda()
-                
+
+            data.requires_grad = True
             data, target = Variable(data), Variable(target)
 
             cam_extractor._hooks_enable = True
@@ -263,15 +264,14 @@ class PruningFineTuner:
             # get the index of the max log-probability
             pred = output.data.max(1, keepdim=True)[1]
             correct += pred.eq(target.data.view_as(pred)).cpu().sum()
-
-            #Enable gradient calculation to get GradCAM heatmaps
-            data.requires_grad=True
             
             for i in range(data.size(0)):
-                # ensure target is correcctly indexed
-                class_idx=int(pred[i])
                 
-                activation_map=cam_extractor(scores=output, class_idx=class_idx)[0].squeeze(0).cpu()
+                class_idx=int(pred[i])
+                scores=output.clone().detach()
+                scores.requires_grad = True
+                
+                activation_map=cam_extractor(scores=scores, class_idx=class_idx)[0].squeeze(0).cpu()
     
                 heatmap = to_pil_image(activation_map, mode="F")
     
