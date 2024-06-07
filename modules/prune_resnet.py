@@ -248,13 +248,13 @@ class PruningFineTuner:
 
         print(self.model)
         
-        cam_extractor = GradCAM(self.model, target_layer='layer4')  
+        cam_extractor = GradCAM(self.model, target_layer='layer4.0.conv3')  
 
         for batch_idx, (data, target) in enumerate(self.test_loader):
             if self.args.cuda:
                 data, target = data.cuda(), target.cuda()
 
-            data.requires_grad = True
+            #data.requires_grad = True
             data, target = Variable(data), Variable(target)
 
             # Forward pass
@@ -269,28 +269,24 @@ class PruningFineTuner:
             
             for i in range(data.size(0)):
                 class_idx=int(pred[i])
-                scores=output.clone().detach()
-                scores.requires_grad = True
+                #scores=output.clone().detach()
+                #scores.requires_grad = True
 
-                self.model.zero_grad()
+                #self.model.zero_grad()
 
-                class_score = scores[i, class_idx]
-                class_score.backward(retain_graph=True)
+                #class_score = scores[i, class_idx]
+                #class_score.backward(retain_graph=True)
 
-                if cam_extractor.hook_g is None:
-                    raise RunTimeError("GradCAM hooks were not set properly")
-                
-                activation_map=cam_extractor(scores=scores, class_idx=class_idx)[0].squeeze(0).cpu()
-
-                print("Activation Map Shape:", activation_map.shape)
+                activation_map=cam_extractor(data, class_idx=class_idx)
+                #print("Activation Map Shape:", activation_map.shape)
                 
                 heatmap = to_pil_image(activation_map, mode="F")
     
-                result = overlay_mask(to_pil_image(data[i].cpu()), heatmap, alpha=self.args.alpha)
+                result = overlay_mask(to_pil_image(data[i]), heatmap, alpha=0.5)
                 
                 plt.imshow(result)
                 plt.axis('off')
-                plt.title(f'Heatmap {batch_idx}_{i}')
+                plt.title(f'Heatmap {batch_idx}_{i} - Prediction: {class_idx}')
                 plt.savefig(f'results/heatmap_{batch_idx}_{i}.png')
                 plt.close()
 
