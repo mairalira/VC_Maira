@@ -252,11 +252,7 @@ class PruningFineTuner:
                 data, target = data.cuda(), target.cuda()
                 
             data, target = Variable(data), Variable(target)
-            
             output=self.model(data)
-
-            #Enable gradient calculation to get GradCAM heatmaps
-            data.requires_grad=True
 
             test_loss += self.criterion(output, target).item()
             
@@ -264,14 +260,15 @@ class PruningFineTuner:
             pred = output.data.max(1, keepdim=True)[1]
             correct += pred.eq(target.data.view_as(pred)).cpu().sum()
 
-            # Generate and save Grad-CAM heatmaps
             for i in range(data.size(0)):
-                scores=output.clone().detach()
-                scores.requires_grad_(True)
-                # Compte activation map
-                activation_map = cam_extractor(class_idx=int(pred[i]), scores=scores)[0].squeeze(0).cpu()                              
-                # Convert it to PIL image
-                heatmap=to_pil_image(activation_map, mode="F")
+                #Enable gradient calculation to get GradCAM heatmaps
+                data.requires_grad=True
+
+                activation_map=cam_extractor(output, class_idx=target[i])[0].squeeze(0).cpu()
+
+                heatmap = to_pil_image(activation_map, mode="F")
+
+                result = overlay_mask(to_pil_image(data[i].cpu()), heatmap, alpha=self.args.alpha)
                 
                 plt.imshow(result)
                 plt.axis('off')
