@@ -246,9 +246,8 @@ class PruningFineTuner:
         flop_value = 0
         param_value = 0
 
-        print(self.model)
         
-        cam_extractor = GradCAM(self.model, target_layer='layer4.0.conv3').to(self.args.device)
+        cam_extractor = GradCAM(self.model, target_layer='layer4.0.conv3', enable_hooks=False).to(self.args.device)
 
         for batch_idx, (data, target) in enumerate(self.test_loader):
             if self.args.cuda:
