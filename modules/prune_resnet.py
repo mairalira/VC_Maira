@@ -14,7 +14,7 @@ import modules.flop as flop
 from modules.prune_layer import prune_conv_layer
 
 import numpy as np
-from torchcam.methods import CAM, GradCAM
+from torchcam.methods import GradCAM
 from torchvision.transforms.functional import to_pil_image
 from torchcam.utils import overlay_mask
 import matplotlib.pyplot as plt
@@ -274,6 +274,9 @@ class PruningFineTuner:
 
                 class_score = scores[i, class_idx]
                 class_score.backward(retain_graph=True)
+
+                if cam_extractor.hook_g is None:
+                    raise RunTimeError("GradCAM hooks were not set properly")
                 
                 activation_map=cam_extractor(scores=scores, class_idx=class_idx)[0].squeeze(0).cpu()
     
