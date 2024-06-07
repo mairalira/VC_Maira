@@ -255,9 +255,7 @@ class PruningFineTuner:
             data.requires_grad = True
             data, target = Variable(data), Variable(target)
 
-            cam_extractor._hooks_enabled = True
             output=self.model(data)
-            cam_extractor._hooks_enabled = False
 
             test_loss += self.criterion(output, target).item()
 
