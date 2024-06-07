@@ -273,7 +273,8 @@ class PruningFineTuner:
 
                 self.model.zero_grad()
 
-                scores[:, class_idx].backward(retain_graph=True)
+                class_score = scores[i, class_idx]
+                class_score.backward(retain_graph=True)
                 
                 activation_map=cam_extractor(scores=scores, class_idx=class_idx)[0].squeeze(0).cpu()
     
