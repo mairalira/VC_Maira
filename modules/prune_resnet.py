@@ -253,7 +253,10 @@ class PruningFineTuner:
                 data, target = data.cuda(), target.cuda()
                 
             data, target = Variable(data), Variable(target)
+
+            cam_extractor._hooks_enable = True
             output=self.model(data)
+            cam_extractor._hooks_enable = False
 
             test_loss += self.criterion(output, target).item()
 
