@@ -279,7 +279,9 @@ class PruningFineTuner:
                     raise RunTimeError("GradCAM hooks were not set properly")
                 
                 activation_map=cam_extractor(scores=scores, class_idx=class_idx)[0].squeeze(0).cpu()
-    
+
+                print("Activation Map Shape:", activation_map.shape)
+                
                 heatmap = to_pil_image(activation_map, mode="F")
     
                 result = overlay_mask(to_pil_image(data[i].cpu()), heatmap, alpha=self.args.alpha)
