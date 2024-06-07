@@ -16,6 +16,7 @@ from modules.prune_layer import prune_conv_layer
 import numpy as np
 from torchcam.methods import CAM, GradCAM
 from torchvision.transforms.functional import to_pil_image
+from torchcam.utils import overlay_mask
 import matplotlib.pyplot as plt
 from PIL import Image
 
