@@ -17,7 +17,7 @@ import torch.nn.functional as F
 import numpy as np
 from torchvision.transforms.functional import to_pil_image
 import matplotlib.pyplot as plt
-from matplotlib import colormaps
+from matplotlib import cm
 import PIL
 
 class HooksHandler:
@@ -273,6 +273,8 @@ class PruningFineTuner:
         save_dir = 'gradcam_results'
         os.makedirs(save_dir, exist_ok=True)
 
+        save_path = os.path.join(save_dir, f"gradcam_{image_id}.png")
+
         # Register hooks
         self.register_hooks(self.model)
 
@@ -308,25 +310,23 @@ class PruningFineTuner:
 
             # Convert heatmap to a numpy array
             heatmap_np = heatmap.detach().cpu().numpy()
-
             # Resize the heatmap to the same size as the input image
             heatmap_pil = to_pil_image(heatmap, mode='F').resize((image_tensor.size(2), image_tensor.size(3)), resample=PIL.Image.BICUBIC)
+            heatmap_resized = np.array(heatmap_pil.resize((original_image_pil.width, original_image_pil.height), PIL.Image.BICUBIC))            
 
             # Apply any colormap you want
-            cmap = colormaps['jet']
-            heatmap_colored = (255 * cmap(np.asarray(heatmap_pil) ** 2)[:, :, :3]).astype(np.uint8)
-    
-            # Convert the input image tensor to a PIL image
-            original_image_pil = to_pil_image(image_tensor[0], mode='RGB')
+            cmap = cm.inferno
+            # Normalize the heatmap to the range [0, 1] for blending with the original image
+            heatmap_normalized = (heatmap_resized - np.min(heatmap_resized)) / (np.max(heatmap_resized) - np.min(heatmap_resized))
             
-            # Overlay the heatmap over the original image
-            overlay = PIL.Image.blend(original_image_pil, PIL.Image.fromarray(heatmap_colored), alpha=0.4)
+            # Blend the heatmap with the original image using a different blending mode
+            # In this case, we'll use the "overlay" blending mode
+            heatmap_blended = PIL.Image.fromarray((heatmap_normalized * 255).astype(np.uint8))
+            overlay = PIL.ImageChops.overlay(original_image_pil, heatmap_blended, scale=2)
             
-            plt.savefig(os.path.join(save_dir, f"gradcam_{image_id}.png"))
-            
-            save_path = os.path.join(save_dir, f"gradcam_{image_id}.png")
+            # Save the overlay image
             overlay.save(save_path)
-
+                        
 
         for batch_idx, (data, target) in enumerate(self.test_loader):
             if self.args.cuda:
