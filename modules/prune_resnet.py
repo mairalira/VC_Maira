@@ -304,12 +304,26 @@ class PruningFineTuner:
             
             # Normalize the heatmap
             heatmap /= torch.max(heatmap)
+
+            # Convert heatmap to a numpy array
+            heatmap_np = heatmap.detach().cpu().numpy()
+
+            # Resize the heatmap to the same size as the input image
+            heatmap_pil = to_pil_image(heatmap, mode='F').resize((image_tensor.size(2), image_tensor.size(3)), resample=PIL.Image.BICUBIC)
+
+            # Apply any colormap you want
+            cmap = colormaps['jet']
+            heatmap_colored = (255 * cmap(np.asarray(heatmap_pil) ** 2)[:, :, :3]).astype(np.uint8)
+    
+            # Convert the input image tensor to a PIL image
+            original_image_pil = to_pil_image(image_tensor[0], mode='RGB')
             
-            # Save the heatmap
-            plt.matshow(heatmap.detach().cpu(), cmap='viridis')
-            plt.colorbar()
+            # Overlay the heatmap over the original image
+            overlay = PIL.Image.blend(original_image_pil, PIL.Image.fromarray(heatmap_colored), alpha=0.4)
+            
             plt.savefig(os.path.join(save_dir, f"gradcam_{image_id}.png"))
-            plt.close()
+            overlay.save(save_path)
+
 
         for batch_idx, (data, target) in enumerate(self.test_loader):
             if self.args.cuda:
