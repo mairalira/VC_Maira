@@ -163,7 +163,7 @@ class PruningFineTuner:
             
             try: 
                 self.train_epoch(optimizer=optimizer)
-                acc, _, _, _, _, _ = self.test()
+                acc, _, _, _, _, _ = self.test(epoch=i)
 
                 if acc > self.best_acc:
                     if not os.path.isdir('checkpoint'):
@@ -180,7 +180,7 @@ class PruningFineTuner:
             except Exception as e: #during fine-tuning
                 print(f'Exception during training: {e}')
                 self.train_epoch(optimizer=optimizer)
-                test_accuracy, test_loss, flop_value, param_value, target, output = self.test()
+                test_accuracy, test_loss, flop_value, param_value, target, output = self.test(epoch=i)
                 self.df.loc[self.COUNT_ROW] = pd.Series({
                                                         "ratio_pruned": self.ratio_pruned_filters,
                                                         "test_acc": test_accuracy,
@@ -444,7 +444,7 @@ class PruningFineTuner:
 
         # Get the accuracy before pruning
         self.temp = 0
-        test_accuracy, test_loss, flop_value, param_value, target, output, df = self.test()
+        test_accuracy, test_loss, flop_value, param_value, target, output, df = self.test(epoch=i)
 
         if df is not None:
             self.df = df
@@ -512,7 +512,7 @@ class PruningFineTuner:
 
             # Update the ratio_pruned_filters before fine-tuning
             self.train(optimizer, epochs=10)
-            test_accuracy, test_loss, flop_value, param_value, target, output, df = self.test()  # I tested it after it was cut.
+            test_accuracy, test_loss, flop_value, param_value, target, output, df = self.test(epoch=i)  # I tested it after it was cut.
 
             self.ratio_pruned_filters = ratio_pruned_filters
             self.df.loc[self.COUNT_ROW] = pd.Series({"ratio_pruned": ratio_pruned_filters,
