@@ -344,7 +344,7 @@ class PruningFineTuner:
                                                  "flops": flop_value,
                                                  "params": param_value,
                                                  "target": target.cpu().numpy(),
-                                                 "output": output.cpu().detach().numpy()),})
+                                                 "output": output.cpu().detach().numpy(),})
         self.COUNT_ROW += 1
         for kk in range(iterations):
             print("Ranking filters.. {}".format(kk))
