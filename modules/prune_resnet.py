@@ -404,10 +404,10 @@ class PruningFineTuner:
             # Save results for each image in the same CSV file with batch_idx as an indexer
             self.save_results(epoch, batch_idx, test_accuracy, test_loss, flop_value, param_value, target, output)
 
-            return test_accuracy, test_loss, flop_value, param_value, torch.tensor(target_all), torch.tensor(output_all), self.df
+            return test_accuracy, test_loss, flop_value, param_value, torch.tensor(np.array(target_all)), torch.tensor(np.array(output_all))#, self.df
 
         else:
-            return test_accuracy, test_loss, None, None, target, output, self.df
+            return test_accuracy, test_loss, None, None, target, output#, self.df
 
     def get_candidates_to_prune(self, num_filters_to_prune, layer_type='conv'):
         self.prunner.reset()
