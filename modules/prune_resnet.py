@@ -307,31 +307,31 @@ class PruningFineTuner:
             # Normalize the heatmap
             heatmap /= torch.max(heatmap)
 
-            # Convert heatmap to a numpy array
-            heatmap_np = heatmap.detach().cpu().numpy()
-
-            # Convert the input image tensor to a PIL image
-            original_image_pil = transforms.ToPILImage()(image_tensor[0].cpu()).convert('RGB')
+            # Create a figure and plot the first image
+            fig, ax = plt.subplots()
+            ax.axis('off') # removes the axis markers
             
-            # Resize the heatmap to the same size as the input image
-            heatmap_pil = to_pil_image(heatmap, mode='F').resize((image_tensor.size(2), image_tensor.size(3)), resample=PIL.Image.BICUBIC)
-            heatmap_resized = heatmap_pil.resize(original_image_pil.size, PIL.Image.BICUBIC)       
-
+            # First plot the original image
+            ax.imshow(to_pil_image(image_tensor, mode='RGB'))
+            
+            # Resize the heatmap to the same size as the input image and defines
+            # a resample algorithm for increasing image resolution
+            # we need heatmap.detach() because it can't be converted to numpy array while
+            # requiring gradients
+            overlay = to_pil_image(heatmap.detach(), mode='F')
+                                  .resize((256,256), resample=PIL.Image.BICUBIC)
+            
             # Apply any colormap you want
             cmap = colormaps['jet']
-            # Normalize the heatmap to the range [0, 1] for blending with the original image
-            heatmap_normalized = (heatmap_resized - np.min(heatmap_resized)) / (np.max(heatmap_resized) - np.min(heatmap_resized))
+            overlay = (255 * cmap(np.asarray(overlay) ** 2)[:, :, :3]).astype(np.uint8)
             
-            # Blend the heatmap with the original image using a different blending mode
-            # In this case, we'll use the "overlay" blending mode
-            heatmap_blended = PIL.Image.fromarray((heatmap_normalized * 255).astype(np.uint8))
+            # Plot the heatmap on the same axes, 
+            # but with alpha < 1 (this defines the transparency of the heatmap)
+            ax.imshow(overlay, alpha=0.4, interpolation='nearest', extent=extent)
 
-            overlay = PIL.Image.blend(original_image_pil, heatmap_blended, alpha=0.4)
-            
             # Save the overlay image
             save_path = os.path.join(save_dir, f"gradcam_{image_id}.png")
-            overlay.save(save_path)
-                        
+            plt.savefig(save_path, bbox_inches='tight', pad_inches=0)
 
         for batch_idx, (data, target) in enumerate(self.test_loader):
             if self.args.cuda:
