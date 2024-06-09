@@ -19,6 +19,7 @@ from torchvision.transforms.functional import to_pil_image
 import matplotlib.pyplot as plt
 from matplotlib import colormaps
 import PIL
+import torchvision.transforms as transforms
 
 class HooksHandler:
     @staticmethod
@@ -323,7 +324,7 @@ class PruningFineTuner:
             heatmap_blended = PIL.Image.fromarray((heatmap_normalized * 255).astype(np.uint8))
 
             # Convert the input image tensor to a PIL image
-            original_image_pil = TF.to_pil_image(image_tensor[0], mode='RGB')
+            original_image_pil = transforms.ToPILImage()(image_tensor[0].cpu()).convert('RGB')
     
             overlay = PIL.ImageChops.overlay(original_image_pil, heatmap_blended, scale=2)
             
