@@ -142,8 +142,8 @@ class PruningFineTuner:
             "test_loss": test_loss,
             "flop_value": flop_value,
             "param_value": param_value,
-            "target": target.cpu().numpy(),
-            "output": output.cpu().detach().numpy()
+            "target": target.tolist(),
+            "output": output.tolist()
         }
         batch_results_df = pd.DataFrame(batch_results)
         results_file = "batch_results.csv"
@@ -372,10 +372,12 @@ class PruningFineTuner:
 
             # Test loss
             test_loss += self.criterion(output, target).item()
+            pred = output.data.max(1,keepdim=True)[1]
+            correct += pred.eq(target.data.view_as(pred)).cpu().sum()
 
             # get the index of the max log-probability
-            pred = output.argmax(dim=1, keepdim=True)
-            correct += pred.eq(target.data.view_as(pred)).sum().item()
+            #pred = output.argmax(dim=1, keepdim=True)
+            #correct += pred.eq(target.data.view_as(pred)).sum().item()
 
             ctr += len(pred)
 
