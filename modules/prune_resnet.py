@@ -17,6 +17,7 @@ import numpy as np
 from torchvision.transforms.functional import to_pil_image
 import matplotlib.pyplot as plt
 from PIL import Image
+from modules.network import 
 
 class PruningFineTuner:
     def __init__(self, args, model):
@@ -235,7 +236,25 @@ class PruningFineTuner:
                 batch_idx * len(batch), len(self.train_loader.dataset),
                 100. * batch_idx / len(self.train_loader), loss.item()))
             self.train_loss += loss.item()
-            
+
+    gradients = None
+    activations = None
+    
+    def backward_hook(module, grad_input, grad_output):
+        global gradients
+        gradients = grad_output[0]
+        print(f'Gradients size: {gradients.size()}') 
+    
+    def forward_hook(module, input, output):
+        global activations
+        activations = output
+        print(f'Activations size: {activations.size()}')
+
+    def register_hooks(model):
+        final_conv_layer = model.layer4[-1].conv3  # Assuming we're hooking the last conv layer of the last block
+        final_conv_layer.register_forward_hook(forward_hook)
+        final_conv_layer.register_full_backward_hook(backward_hook)
+
     def test(self):
         self.model.eval()
         test_loss = 0
@@ -243,6 +262,48 @@ class PruningFineTuner:
         ctr = 0
         flop_value = 0
         param_value = 0
+
+        save_dir = 'gradcam_results'
+        os.makedirs(save_dir, exist_ok=True)
+
+        # Register hooks
+        self.register_hooks(self.model)
+
+        # For Grad-CAM
+        def get_gradcam(image_tensor, image_id):
+            # Forward pass
+            output = model(image_tensor)
+            
+            # Get the predicted class
+            predicted_class = output.argmax(dim=1).item()
+            
+            # Zero gradients
+            model.zero_grad()
+            
+            # Backward pass
+            output[0, predicted_class].backward()
+            
+            # Pool the gradients across the channels
+            pooled_gradients = torch.mean(gradients, dim=[0, 2, 3])
+            
+            # Weight the channels by corresponding gradients
+            for i in range(activations.size(1)):
+                activations[:, i, :, :] *= pooled_gradients[i]
+            
+            # Average the channels of the activations
+            heatmap = torch.mean(activations, dim=1).squeeze()
+            
+            # Apply ReLU to the heatmap
+            heatmap = F.relu(heatmap)
+            
+            # Normalize the heatmap
+            heatmap /= torch.max(heatmap)
+            
+            # Save the heatmap
+            plt.matshow(heatmap.detach().cpu(), cmap='viridis')
+            plt.colorbar()
+            plt.savefig(os.path.join(save_dir, f"gradcam_{image_id}.png"))
+            plt.close()
 
         for batch_idx, (data, target) in enumerate(self.test_loader):
             if self.args.cuda:
@@ -259,6 +320,10 @@ class PruningFineTuner:
             correct += pred.eq(target.data.view_as(pred)).sum().item()
 
             ctr += len(pred)
+
+            # Get Grad-CAM for each image in the batch
+            for i in range(data.size(0)):
+                get_gradcam(data[i].unsqueeze(0), f"batch{batch_idx}_image{i}")
             
         test_loss /= ctr
         test_accuracy = float(correct) / ctr
