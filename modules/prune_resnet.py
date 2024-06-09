@@ -13,6 +13,7 @@ import modules.flops_counter_mask as fcm
 import modules.flop as flop
 from modules.prune_layer import prune_conv_layer
 
+import torch.nn.functional as F
 import numpy as np
 from torchvision.transforms.functional import to_pil_image
 import matplotlib.pyplot as plt
@@ -253,7 +254,7 @@ class PruningFineTuner:
     gradients = None
     activations = None
   
-    @classmethod
+    #@classmethod
     def register_hooks(cls,model):
         hooks_handler = HooksHandler()
         final_conv_layer = model.layer4[-1].conv3  # Assuming we're hooking the last conv layer of the last block
