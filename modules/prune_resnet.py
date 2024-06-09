@@ -310,7 +310,7 @@ class PruningFineTuner:
             heatmap_np = heatmap.detach().cpu().numpy()
             # Resize the heatmap to the same size as the input image
             heatmap_pil = to_pil_image(heatmap, mode='F').resize((image_tensor.size(2), image_tensor.size(3)), resample=PIL.Image.BICUBIC)
-            heatmap_resized = np.array(heatmap_pil.resize((original_image_pil.width, original_image_pil.height), PIL.Image.BICUBIC))            
+            heatmap_resized = np.array(heatmap_pil.resize((original_image_tensor.width, original_image_tensor.height), PIL.Image.BICUBIC))            
 
             # Apply any colormap you want
             cmap = cm.inferno
@@ -320,6 +320,10 @@ class PruningFineTuner:
             # Blend the heatmap with the original image using a different blending mode
             # In this case, we'll use the "overlay" blending mode
             heatmap_blended = PIL.Image.fromarray((heatmap_normalized * 255).astype(np.uint8))
+
+            # Convert the input image tensor to a PIL image
+            original_image_pil = TF.to_pil_image(image_tensor[0], mode='RGB')
+    
             overlay = PIL.ImageChops.overlay(original_image_pil, heatmap_blended, scale=2)
             
             # Save the overlay image
