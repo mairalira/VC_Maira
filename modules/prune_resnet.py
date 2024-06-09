@@ -318,8 +318,7 @@ class PruningFineTuner:
             # a resample algorithm for increasing image resolution
             # we need heatmap.detach() because it can't be converted to numpy array while
             # requiring gradients
-            overlay = to_pil_image(heatmap.detach(), mode='F')
-                                  .resize((256,256), resample=PIL.Image.BICUBIC)
+            overlay = to_pil_image(heatmap.detach(), mode='F').resize((256,256), resample=PIL.Image.BICUBIC)
             
             # Apply any colormap you want
             cmap = colormaps['jet']
