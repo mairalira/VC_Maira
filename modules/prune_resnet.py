@@ -339,16 +339,16 @@ class PruningFineTuner:
             
             # First plot the original image
             ax.imshow(pil_image)
-            
-            # Resize the heatmap to the same size as the input image and defines
-            # a resample algorithm for increasing image resolution
-            # we need heatmap.detach() because it can't be converted to numpy array while
-            # requiring gradients
-            overlay = to_pil_image(heatmap.detach(), mode='F').resize((256,256), resample=PIL.Image.BICUBIC)
-            
-            # Apply any colormap you want
+
+            # Resize the heatmap to the same size as the input image
+            heatmap_resized = heatmap.detach().cpu().numpy()
+            heatmap_resized = np.uint8(255 * heatmap_resized)
+            heatmap_resized = PIL.Image.fromarray(heatmap_resized)
+            heatmap_resized = heatmap_resized.resize((image_width, image_height), resample=PIL.Image.BICUBIC)
+
             cmap = colormaps['jet']
-            overlay = (255 * cmap(np.asarray(overlay) ** 2)[:, :, :3]).astype(np.uint8)
+            overlay = (255 * cmap(np.asarray(heatmap_resized) ** 2)[:, :, :3]).astype(np.uint8)
+
             
             # Plot the heatmap on the same axes, 
             # but with alpha < 1 (this defines the transparency of the heatmap)
