@@ -17,7 +17,6 @@ import numpy as np
 from torchvision.transforms.functional import to_pil_image
 import matplotlib.pyplot as plt
 from PIL import Image
-from modules.network import 
 
 class PruningFineTuner:
     def __init__(self, args, model):
