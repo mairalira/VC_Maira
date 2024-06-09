@@ -336,6 +336,8 @@ class PruningFineTuner:
             save_path = os.path.join(save_dir, f"gradcam_{image_id}.png")
             plt.savefig(save_path, bbox_inches='tight', pad_inches=0)
 
+            plt.close(fig)
+
         for batch_idx, (data, target) in enumerate(self.test_loader):
             if self.args.cuda:
                 data, target = data.cuda(), target.cuda()
