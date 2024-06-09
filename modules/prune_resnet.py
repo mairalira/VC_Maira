@@ -311,7 +311,7 @@ class PruningFineTuner:
             
             # Resize the heatmap to the same size as the input image
             heatmap_pil = to_pil_image(heatmap, mode='F').resize((image_tensor.size(2), image_tensor.size(3)), resample=PIL.Image.BICUBIC)
-            heatmap_resized = np.array(heatmap_pil.resize((image_tensor.width, image_tensor.height), PIL.Image.BICUBIC))            
+            heatmap_resized = np.array(heatmap_pil.resize((image_tensor.size(2), image_tensor.size(3)), PIL.Image.BICUBIC))            
 
             # Apply any colormap you want
             cmap = colormaps['jet']
