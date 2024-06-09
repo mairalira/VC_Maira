@@ -366,10 +366,10 @@ class PruningFineTuner:
             # print('Params:', self.num_param[-1])
             print(f'Flops: {flop_value}, Params: {param_value}')
 
-            return test_accuracy, test_loss, flop_value, param_value, target, output
+            return test_accuracy, test_loss, flop_value, param_value, target, output, self.df
 
         else:
-            return test_accuracy, test_loss, None, None, target, output
+            return test_accuracy, test_loss, None, None, target, output, self.df
 
     def get_candidates_to_prune(self, num_filters_to_prune, layer_type='conv'):
         self.prunner.reset()
@@ -406,7 +406,10 @@ class PruningFineTuner:
 
         # Get the accuracy before pruning
         self.temp = 0
-        test_accuracy, test_loss, flop_value, param_value, target, output = self.test()
+        test_accuracy, test_loss, flop_value, param_value, target, output, df = self.test()
+
+        if df is not None:
+            self.df = df
 
         # Make sure all the layers are trainable
         for param in self.model.parameters():
@@ -467,7 +470,7 @@ class PruningFineTuner:
 
             # Update the ratio_pruned_filters before fine-tuning
             self.train(optimizer, epochs=10)
-            test_accuracy, test_loss, flop_value, param_value, target, output = self.test()  # I tested it after it was cut.
+            test_accuracy, test_loss, flop_value, param_value, target, output, df = self.test()  # I tested it after it was cut.
 
             self.ratio_pruned_filters = ratio_pruned_filters
             self.df.loc[self.COUNT_ROW] = pd.Series({"ratio_pruned": ratio_pruned_filters,
