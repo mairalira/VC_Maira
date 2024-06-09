@@ -10,7 +10,7 @@ import torch
 import os
 import pandas as pd
 
-from modules.network import ResNet50, VGG_Alex
+from modules.network import ResNet18, ResNet50, VGG_Alex
 import modules.prune_resnet as modules_resnet
 import modules.prune_vgg as modules_vgg
 
