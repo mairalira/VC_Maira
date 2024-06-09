@@ -273,8 +273,6 @@ class PruningFineTuner:
         save_dir = 'gradcam_results'
         os.makedirs(save_dir, exist_ok=True)
 
-        save_path = os.path.join(save_dir, f"gradcam_{image_id}.png")
-
         # Register hooks
         self.register_hooks(self.model)
 
@@ -325,6 +323,7 @@ class PruningFineTuner:
             overlay = PIL.ImageChops.overlay(original_image_pil, heatmap_blended, scale=2)
             
             # Save the overlay image
+            save_path = os.path.join(save_dir, f"gradcam_{image_id}.png")
             overlay.save(save_path)
                         
 
