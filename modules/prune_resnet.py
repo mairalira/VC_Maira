@@ -278,13 +278,13 @@ class PruningFineTuner:
         # For Grad-CAM
         def get_gradcam(image_tensor, image_id):
             # Forward pass
-            output = model(image_tensor)
+            output = self.model(image_tensor)
             
             # Get the predicted class
             predicted_class = output.argmax(dim=1).item()
             
             # Zero gradients
-            model.zero_grad()
+            self.model.zero_grad()
             
             # Backward pass
             output[0, predicted_class].backward()
