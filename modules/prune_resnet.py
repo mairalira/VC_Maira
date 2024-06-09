@@ -307,12 +307,16 @@ class PruningFineTuner:
             # Normalize the heatmap
             heatmap /= torch.max(heatmap)
 
+            pil_image = to_pil_image(image_tensor[0], mode='RGB')
+            image_width, image_height = pil_image.size
+            extent = [0, image_width, 0, image_height]
+
             # Create a figure and plot the first image
             fig, ax = plt.subplots()
             ax.axis('off') # removes the axis markers
             
             # First plot the original image
-            ax.imshow(to_pil_image(image_tensor[0], mode='RGB'))
+            ax.imshow(pil_image)
             
             # Resize the heatmap to the same size as the input image and defines
             # a resample algorithm for increasing image resolution
