@@ -326,7 +326,7 @@ class PruningFineTuner:
             # Convert the input image tensor to a PIL image
             original_image_pil = transforms.ToPILImage()(image_tensor[0].cpu()).convert('RGB')
     
-            overlay = PIL.Image.blend(original_image_pil, heatmap_blended, alpha=0.4))
+            overlay = PIL.Image.blend(original_image_pil, heatmap_blended, alpha=0.4)
             
             # Save the overlay image
             save_path = os.path.join(save_dir, f"gradcam_{image_id}.png")
