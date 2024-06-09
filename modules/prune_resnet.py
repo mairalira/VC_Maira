@@ -342,7 +342,7 @@ class PruningFineTuner:
 
             # Resize the heatmap to the same size as the input image
             heatmap_resized = heatmap.detach().cpu().numpy()
-            heatmap_resized = np.uint8(255 * heatmap_resized)
+            heatmap_resized = np.clip(heatmap_resized, 0, 255).astype(np.uint8)
             heatmap_resized = PIL.Image.fromarray(heatmap_resized)
             heatmap_resized = heatmap_resized.resize((image_width, image_height), resample=PIL.Image.BICUBIC)
 
@@ -377,7 +377,7 @@ class PruningFineTuner:
 
             ctr += len(pred)
 
-            if epoch is not None and epoch == self.current_epoch:
+            if epoch is not None and self.current_epoch == 9:
                 # Get Grad-CAM for each image in the batch
                 for i in range(data.size(0)):
                     get_gradcam(data[i].unsqueeze(0), f"batch{batch_idx}_image{i}")
