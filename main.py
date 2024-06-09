@@ -127,7 +127,7 @@ if __name__ == '__main__':
                             "flops": flop_value,
                             "params": param_value,
                             "target": target.cpu().numpy(),
-                            "output": output.cpu().numpy()
+                            "output": output.cpu().detach().numpy()
                             }
         
         fine_tuner.df.loc[fine_tuner.COUNT_ROW] = pd.Series(evaluation_results)        
