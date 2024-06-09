@@ -323,6 +323,8 @@ class PruningFineTuner:
             overlay = PIL.Image.blend(original_image_pil, PIL.Image.fromarray(heatmap_colored), alpha=0.4)
             
             plt.savefig(os.path.join(save_dir, f"gradcam_{image_id}.png"))
+            
+            save_path = os.path.join(save_dir, f"gradcam_{image_id}.png")
             overlay.save(save_path)
 
 
