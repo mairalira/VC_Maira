@@ -24,13 +24,13 @@ class HooksHandler:
     def backward_hook(module, grad_input, grad_output):
         global gradients
         gradients = grad_output[0]
-        print(f'Gradients size: {gradients.size()}') 
+        #print(f'Gradients size: {gradients.size()}') 
 
     @staticmethod
     def forward_hook(module, input, output):
         global activations
         activations = output
-        print(f'Activations size: {activations.size()}')
+        #print(f'Activations size: {activations.size()}')
         
 
 class PruningFineTuner:
