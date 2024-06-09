@@ -26,15 +26,12 @@ class HooksHandler:
     def backward_hook(module, grad_input, grad_output):
         global gradients
         gradients = grad_output[0]
-        #print(f'Gradients size: {gradients.size()}') 
 
     @staticmethod
     def forward_hook(module, input, output):
         global activations
         activations = output
-        #print(f'Activations size: {activations.size()}')
         
-
 class PruningFineTuner:
     def __init__(self, args, model):
         torch.manual_seed(args.seed)
@@ -142,8 +139,8 @@ class PruningFineTuner:
             "test_loss": test_loss,
             "flop_value": flop_value,
             "param_value": param_value,
-            "target": target.tolist(),
-            "output": output.tolist()
+            "target": str(target.tolist()),
+            "output": str(output.tolist())
         }
         batch_results_df = pd.DataFrame(batch_results)
         results_file = "batch_results.csv"
@@ -292,6 +289,8 @@ class PruningFineTuner:
         ctr = 0
         flop_value = 0
         param_value = 0
+        target_all = []
+        output_all = []
 
         if epoch is not None and epoch != self.current_epoch:  # Check if it's the last epoch
             return
@@ -374,6 +373,9 @@ class PruningFineTuner:
             test_loss += self.criterion(output, target).item()
             pred = output.data.max(1,keepdim=True)[1]
             correct += pred.eq(target.data.view_as(pred)).cpu().sum()
+            
+            target_all.extend(target.cpu().numpy())
+            output_all.extend(output.cpu().detach().numpy())
 
             # get the index of the max log-probability
             #pred = output.argmax(dim=1, keepdim=True)
@@ -411,7 +413,7 @@ class PruningFineTuner:
             # Save results for each image in the same CSV file with batch_idx as an indexer
             self.save_results(epoch, batch_idx, test_accuracy, test_loss, flop_value, param_value, target, output)
 
-            return test_accuracy, test_loss, flop_value, param_value, target, output, self.df
+            return test_accuracy, test_loss, flop_value, param_value, torch.tensor(target_all), torch.tensor(output_all), self.df
 
         else:
             return test_accuracy, test_loss, None, None, target, output, self.df
