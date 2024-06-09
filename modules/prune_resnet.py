@@ -17,6 +17,7 @@ import torch.nn.functional as F
 import numpy as np
 from torchvision.transforms.functional import to_pil_image
 import matplotlib.pyplot as plt
+from matplotlib import colormaps
 import PIL
 
 class HooksHandler:
