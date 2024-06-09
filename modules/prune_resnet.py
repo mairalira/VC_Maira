@@ -133,14 +133,14 @@ class PruningFineTuner:
     def save_results(self, epoch, batch_idx, test_accuracy, test_loss, flop_value, param_value, target, output):
         # Save test results
         batch_results = {
-            "epoch": epoch,
-            "batch_idx": batch_idx,
-            "test_accuracy": test_accuracy,
-            "test_loss": test_loss,
-            "flop_value": flop_value,
-            "param_value": param_value,
-            "target": str(target.tolist()),
-            "output": str(output.tolist())
+            "epoch": [epoch],
+            "batch_idx": [batch_idx],
+            "test_accuracy": [test_accuracy],
+            "test_loss": [test_loss],
+            "flop_value": [flop_value],
+            "param_value": [param_value],
+            "target": [str(target.tolist())],
+            "output": [str(output.tolist())]
         }
         batch_results_df = pd.DataFrame(batch_results)
         results_file = "batch_results.csv"
@@ -160,10 +160,8 @@ class PruningFineTuner:
         for i in range(epochs):
             print("Epoch: ", i)
             self.current_epoch = i
-            #scheduler.step()
-            #print(f"LR: {scheduler.get_lr()}")
             
-            try: #during training
+            try: 
                 self.train_epoch(optimizer=optimizer)
                 acc, _, _, _, _, _ = self.test()
 
@@ -189,8 +187,8 @@ class PruningFineTuner:
                                                         "test_loss": test_loss,
                                                         "flops": flop_value,
                                                         "params": param_value, 
-                                                        "target": target.cpu().numpy(),
-                                                        "output": output.cpu().detach().numpy()
+                                                        "target": target.cpu().numpy().tolist(),
+                                                        "output": output.cpu().detach().numpy().tolist()
                                                         })
                 self.COUNT_ROW += 1
 
@@ -377,14 +375,9 @@ class PruningFineTuner:
             target_all.extend(target.cpu().numpy())
             output_all.extend(output.cpu().detach().numpy())
 
-            # get the index of the max log-probability
-            #pred = output.argmax(dim=1, keepdim=True)
-            #correct += pred.eq(target.data.view_as(pred)).sum().item()
-
             ctr += len(pred)
 
             if epoch is not None and epoch == self.current_epoch:
-
                 # Get Grad-CAM for each image in the batch
                 for i in range(data.size(0)):
                     get_gradcam(data[i].unsqueeze(0), f"batch{batch_idx}_image{i}")
@@ -406,8 +399,6 @@ class PruningFineTuner:
             param_value = flop.get_model_parameters_number_value_mask(self.model)
             self.model.eval().stop_flops_count()
             self.model = fcm.remove_flops_counting_methods(self.model)
-            # print('Flops:', self.flop_val[-1])
-            # print('Params:', self.num_param[-1])
             print(f'Flops: {flop_value}, Params: {param_value}')
 
             # Save results for each image in the same CSV file with batch_idx as an indexer
