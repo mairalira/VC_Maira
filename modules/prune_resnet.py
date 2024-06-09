@@ -18,6 +18,20 @@ from torchvision.transforms.functional import to_pil_image
 import matplotlib.pyplot as plt
 from PIL import Image
 
+class HooksHandler:
+    @staticmethod
+    def backward_hook(module, grad_input, grad_output):
+        global gradients
+        gradients = grad_output[0]
+        print(f'Gradients size: {gradients.size()}') 
+
+    @staticmethod
+    def forward_hook(module, input, output):
+        global activations
+        activations = output
+        print(f'Activations size: {activations.size()}')
+        
+
 class PruningFineTuner:
     def __init__(self, args, model):
         torch.manual_seed(args.seed)
@@ -238,21 +252,13 @@ class PruningFineTuner:
 
     gradients = None
     activations = None
-    
-    def backward_hook(module, grad_input, grad_output):
-        global gradients
-        gradients = grad_output[0]
-        print(f'Gradients size: {gradients.size()}') 
-    
-    def forward_hook(module, input, output):
-        global activations
-        activations = output
-        print(f'Activations size: {activations.size()}')
-
-    def register_hooks(model):
+  
+    @classmethod
+    def register_hooks(cls,model):
+        hooks_handler = HooksHandler()
         final_conv_layer = model.layer4[-1].conv3  # Assuming we're hooking the last conv layer of the last block
-        final_conv_layer.register_forward_hook(PruningFineTuner.forward_hook)
-        final_conv_layer.register_full_backward_hook(PruningFineTuner.backward_hook)
+        final_conv_layer.register_forward_hook(hooks_handler.forward_hook)
+        final_conv_layer.register_full_backward_hook(hooks_handler.backward_hook)
 
     def test(self):
         self.model.eval()
