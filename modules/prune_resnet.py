@@ -17,7 +17,7 @@ import torch.nn.functional as F
 import numpy as np
 from torchvision.transforms.functional import to_pil_image
 import matplotlib.pyplot as plt
-from PIL import Image
+import PIL
 
 class HooksHandler:
     @staticmethod
