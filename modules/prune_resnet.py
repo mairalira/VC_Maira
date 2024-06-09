@@ -312,7 +312,7 @@ class PruningFineTuner:
             ax.axis('off') # removes the axis markers
             
             # First plot the original image
-            ax.imshow(to_pil_image(image_tensor, mode='RGB'))
+            ax.imshow(to_pil_image(image_tensor[0], mode='RGB'))
             
             # Resize the heatmap to the same size as the input image and defines
             # a resample algorithm for increasing image resolution
