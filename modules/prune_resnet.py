@@ -14,9 +14,7 @@ import modules.flop as flop
 from modules.prune_layer import prune_conv_layer
 
 import numpy as np
-from torchcam.methods import GradCAM
 from torchvision.transforms.functional import to_pil_image
-from torchcam.utils import overlay_mask
 import matplotlib.pyplot as plt
 from PIL import Image
 
@@ -246,15 +244,11 @@ class PruningFineTuner:
         flop_value = 0
         param_value = 0
 
-        self.model.to(self.args.device)
-        
-        cam_extractor = GradCAM(self.model, target_layer='layer4.0.conv3', enable_hooks=False)
-
         for batch_idx, (data, target) in enumerate(self.test_loader):
-            data, target = data.to(self.args.device), target.to(self.args.device)
+            if self.args.cuda:
+                data, target = data.cuda(), target.cuda()
+                
             data, target = Variable(data), Variable(target)
-
-            # Forward pass
             output=self.model(data)
 
             # Test loss
@@ -263,20 +257,6 @@ class PruningFineTuner:
             # get the index of the max log-probability
             pred = output.argmax(dim=1, keepdim=True)
             correct += pred.eq(target.data.view_as(pred)).sum().item()
-            
-            for i in range(len(data)):
-                class_idx=int(pred[i])
-                activation_map=cam_extractor(data[i].unsqueeze(0), class_idx)
-
-                heatmap = to_pil_image(activation_map, mode="F")
-    
-                result = overlay_mask(to_pil_image(data[i]), heatmap, alpha=0.5)
-                
-                plt.imshow(result)
-                plt.axis('off')
-                plt.title(f'Heatmap {batch_idx}_{i} - Prediction: {class_idx}')
-                plt.savefig(f'results/heatmap_{batch_idx}_{i}.png')
-                plt.close()
 
             ctr += len(pred)
             
