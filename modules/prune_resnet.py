@@ -251,8 +251,8 @@ class PruningFineTuner:
 
     def register_hooks(model):
         final_conv_layer = model.layer4[-1].conv3  # Assuming we're hooking the last conv layer of the last block
-        final_conv_layer.register_forward_hook(forward_hook)
-        final_conv_layer.register_full_backward_hook(backward_hook)
+        final_conv_layer.register_forward_hook(PruningFineTuner.forward_hook)
+        final_conv_layer.register_full_backward_hook(PruningFineTuner.backward_hook)
 
     def test(self):
         self.model.eval()
