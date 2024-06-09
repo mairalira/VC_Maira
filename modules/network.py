@@ -191,29 +191,6 @@ def ResNet50():
 #def ResNet152():
     #return ResNet(Bottleneck, [3, 8, 36, 3])
 
-gradients = None
-activations = None
-
-model=ResNet50()
-
-def backward_hook(module, grad_input, grad_output):
-    global gradients
-    gradients = grad_output[0]
-    print(f'Gradients size: {gradients.size()}') 
-
-def forward_hook(module, input, output):
-    global activations
-    activations = output
-    print(f'Activations size: {activations.size()}')
-
-# Register hooks for the last convolutional layer
-last_conv_layer = model.layer4[-1].conv3
-last_conv_layer.register_forward_hook(forward_hook)
-last_conv_layer.register_full_backward_hook(backward_hook)
-
-# Load model weights
-model.load_state_dict(torch.load(".checkpoint/resnet50_cifar10_ckpt.pth", map_location=torch.device('cpu')))
-model.eval()
 
 if __name__ == '__main__':
     # Dummy arguments
