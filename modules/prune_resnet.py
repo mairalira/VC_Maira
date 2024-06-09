@@ -17,7 +17,7 @@ import torch.nn.functional as F
 import numpy as np
 from torchvision.transforms.functional import to_pil_image
 import matplotlib.pyplot as plt
-from matplotlib import cm
+from matplotlib import colormaps
 import PIL
 
 class HooksHandler:
@@ -313,7 +313,7 @@ class PruningFineTuner:
             heatmap_resized = np.array(heatmap_pil.resize((original_image_tensor.width, original_image_tensor.height), PIL.Image.BICUBIC))            
 
             # Apply any colormap you want
-            cmap = cm.inferno
+            cmap = colormaps['jet']
             # Normalize the heatmap to the range [0, 1] for blending with the original image
             heatmap_normalized = (heatmap_resized - np.min(heatmap_resized)) / (np.max(heatmap_resized) - np.min(heatmap_resized))
             
