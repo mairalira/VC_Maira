@@ -366,6 +366,20 @@ class PruningFineTuner:
             # print('Params:', self.num_param[-1])
             print(f'Flops: {flop_value}, Params: {param_value}')
 
+            # Save results for each image in the same CSV file with batch_idx as an indexer
+            batch_results = {
+                "batch_idx": [batch_idx] * data.size(0),
+                "test_accuracy": [test_accuracy] * data.size(0),
+                "test_loss": [test_loss] * data.size(0),
+                "flop_value": [flop_value] * data.size(0),
+                "param_value": [param_value] * data.size(0),
+                "target": target.cpu().numpy(),
+                "output": output.cpu().detach().numpy()
+            }
+            batch_results_df = pd.DataFrame(batch_results)
+            results_file = "batch_results.csv"
+            batch_results_df.to_csv(results_file, mode='a', header=not os.path.exists(results_file), index=False)
+
             return test_accuracy, test_loss, flop_value, param_value, target, output, self.df
 
         else:
