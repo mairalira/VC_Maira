@@ -39,6 +39,7 @@ class PruningFineTuner:
     def __init__(self, args, model):
         torch.manual_seed(args.seed)
         self.ratio_pruned_filters = 1.0
+        self.current_epoch = 0  # Initialize current_epoch variable
         self.df = pd.DataFrame(columns=["ratio_pruned", "test_acc", "test_loss", "flops","params", "target", "output"])
         self.dt = pd.DataFrame(columns=["ratio_pruned", "train_loss"])
         
@@ -132,6 +133,25 @@ class PruningFineTuner:
                     filters += module.out_channels
         return filters
 
+    def save_results(self, epoch, batch_idx, test_accuracy, test_loss, flop_value, param_value, target, output):
+        # Save test results
+        batch_results = {
+            "epoch": epoch,
+            "batch_idx": batch_idx,
+            "test_accuracy": test_accuracy,
+            "test_loss": test_loss,
+            "flop_value": flop_value,
+            "param_value": param_value,
+            "target": target.cpu().numpy(),
+            "output": output.cpu().detach().numpy()
+        }
+        batch_results_df = pd.DataFrame(batch_results)
+        results_file = "batch_results.csv"
+        batch_results_df.to_csv(results_file, mode='a', header=not os.path.exists(results_file), index=False)
+    
+        # Log results to console
+        print(f'\nEpoch: {epoch} | Batch: {batch_idx} | Test Accuracy: {test_accuracy:.5f} | Test Loss: {test_loss:.4f} | FLOPs: {flop_value} | Params: {param_value}\n')
+
     def train(self, optimizer=None, epochs=10): #corrected epochs argument (was epoches)
         if optimizer is None:
             optimizer = optim.SGD(self.model.parameters(), lr=self.args.lr,
@@ -142,6 +162,7 @@ class PruningFineTuner:
 
         for i in range(epochs):
             print("Epoch: ", i)
+            self.current_epoch = i
             #scheduler.step()
             #print(f"LR: {scheduler.get_lr()}")
             
@@ -158,8 +179,9 @@ class PruningFineTuner:
 
                 optimizer.step() #optimizer before scheduler
                 scheduler.step()
-                
 
+                self.test(epoch=i)
+            
             except Exception as e: #during fine-tuning
                 print(f'Exception during training: {e}')
                 self.train_epoch(optimizer=optimizer)
@@ -263,13 +285,16 @@ class PruningFineTuner:
         final_conv_layer.register_forward_hook(hooks_handler.forward_hook)
         final_conv_layer.register_full_backward_hook(hooks_handler.backward_hook)
 
-    def test(self):
+    def test(self, epoch=None):
         self.model.eval()
         test_loss = 0
         correct = 0
         ctr = 0
         flop_value = 0
         param_value = 0
+
+        if epoch is not None and epoch != self.current_epoch:  # Check if it's the last epoch
+            return
 
         save_dir = 'gradcam_results'
         os.makedirs(save_dir, exist_ok=True)
@@ -354,9 +379,11 @@ class PruningFineTuner:
 
             ctr += len(pred)
 
-            # Get Grad-CAM for each image in the batch
-            for i in range(data.size(0)):
-                get_gradcam(data[i].unsqueeze(0), f"batch{batch_idx}_image{i}")
+            if epoch is not None and epoch == self.current_epoch:
+
+                # Get Grad-CAM for each image in the batch
+                for i in range(data.size(0)):
+                    get_gradcam(data[i].unsqueeze(0), f"batch{batch_idx}_image{i}")
             
         test_loss /= ctr
         test_accuracy = float(correct) / ctr
@@ -380,18 +407,7 @@ class PruningFineTuner:
             print(f'Flops: {flop_value}, Params: {param_value}')
 
             # Save results for each image in the same CSV file with batch_idx as an indexer
-            batch_results = {
-                "batch_idx": [batch_idx] * data.size(0),
-                "test_accuracy": [test_accuracy] * data.size(0),
-                "test_loss": [test_loss] * data.size(0),
-                "flop_value": [flop_value] * data.size(0),
-                "param_value": [param_value] * data.size(0),
-                "target": target.cpu().numpy(),
-                "output": output.cpu().detach().numpy()
-            }
-            batch_results_df = pd.DataFrame(batch_results)
-            results_file = "batch_results.csv"
-            batch_results_df.to_csv(results_file, mode='a', header=not os.path.exists(results_file), index=False)
+            self.save_results(epoch, batch_idx, test_accuracy, test_loss, flop_value, param_value, target, output)
 
             return test_accuracy, test_loss, flop_value, param_value, target, output, self.df
 
@@ -448,10 +464,13 @@ class PruningFineTuner:
         iterations = int(iterations * self.args.total_pr)
 
         self.ratio_pruned_filters = 1.0
+        
         results_file = f"{args.save_dir}/scenario1_results_{self.args.data_type}_{self.args.arch}_{self.args.method_type}_trial{self.args.trialnum:02d}.csv"
         results_file_train = f"{args.save_dir}/scenario1_train_{self.args.data_type}_{self.args.arch}_{self.args.method_type}_trial{self.args.trialnum:02d}.csv"
+        
         self.df = pd.DataFrame(columns=["ratio_pruned", "test_acc", "test_loss", "flops","params","target","output"])
         self.dt = pd.DataFrame(columns=["ratio_pruned", "train_loss"])
+        
         self.df.loc[self.COUNT_ROW] = pd.Series({
                                                  "ratio_pruned": self.ratio_pruned_filters,
                                                  "test_acc": test_accuracy,
@@ -461,6 +480,7 @@ class PruningFineTuner:
                                                  "target": target.cpu().numpy(),
                                                  "output": output.cpu().detach().numpy(),})
         self.COUNT_ROW += 1
+        
         for kk in range(iterations):
             print("Ranking filters.. {}".format(kk))
             prune_targets = self.get_candidates_to_prune(
@@ -524,6 +544,7 @@ class PruningFineTuner:
         self.dt.to_csv(results_file_train)
 
         self.ratio_pruned_filters = ratio_pruned_filters
+        
         self.df.loc[self.COUNT_ROW] = pd.Series({"ratio_pruned": ratio_pruned_filters,
                                                  "test_acc": test_accuracy,
                                                  "test_loss": test_loss,
