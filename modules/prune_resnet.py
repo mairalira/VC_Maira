@@ -340,26 +340,31 @@ class PruningFineTuner:
             image_width = image_tensor.size(3)
             image_height = image_tensor.size(2)
 
-            heatmap = to_pil_image(heatmap.detach().cpu(), mode='F').resize((image_width, image_height), resample=PIL.Image.BICUBIC)
-            heatmap = np.array(heatmap)
-
-            # Convert heatmap to RGB using colormap
-            norm = colors.Normalize(vmin=0, vmax=1)
-            sm = cm.ScalarMappable(cmap='jet', norm=norm)
-            heatmap = sm.to_rgba(heatmap)[:, :, :3]  # Remove the alpha channel
-            print("Heatmap converted to RGB")
-
+            # Heatmap as a np array
             heatmap = (heatmap * 255).astype(np.uint8)
 
-            heatmap = PIL.Image.fromarray(heatmap).resize((image_width, image_height), resample=PIL.Image.BICUBIC)
-            
-            overlay = PIL.Image.fromarray(heatmap)
+            # Converting heatmap to RGB through colormap
+            norm = colors.Normalize(vmin=0, vmax=1)
+            sm = cm.ScalarMappable(cmap='jet', norm=norm)
+            heatmap_rgb = sm.to_rgba(heatmap)[:, :, :3]  # Remove the alpha channel
+            print("Heatmap converted to RGB")
 
+            # Converting heatmap_rgb array to PIL Image
+            heatmap_rgb_pil = PIL.Image.fromarray((heatmap_rgb * 255).astype(np.uint8))
+            
+            # Overlay image = resized heatmap
+            overlay = heatmap_rgb_pil.resize((224,224), resample=PIL.Image.BICUBIC)
+
+            # Original image in PIL
             original_image = to_pil_image(image_tensor[0].cpu(), mode='RGB')
 
-            overlay = PIL.Image.blend(original_image, overlay, alpha=0.5)
+            # Resize original image to 224x224
+            original_image_resized = original_image.resize((224, 224), resample=PIL.Image.BICUBIC)
+
+            blended_image = PIL.Image.blend(original_image, overlay, alpha=0.4)
+
             save_path = f'gradcam_results/gradcam_{image_id}.png'
-            overlay.save(save_path)
+            blended_image.save(save_path)
             print(f"Overlay image saved to {save_path}")
             
             
