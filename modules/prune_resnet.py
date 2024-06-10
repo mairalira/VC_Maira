@@ -343,16 +343,24 @@ class PruningFineTuner:
             extent = [0, image_width, 0, image_height]
 
             heatmap = to_pil_image(heatmap.detach(), mode='F').resize((image_width, image_height), resample=PIL.Image.BICUBIC)
+            heatmap = np.array(heatmap)
 
-            cmap = colormaps['jet']
-            heatmap = cmap(heatmap)[:, :, :3]  # Remove the alpha channel
+            # Convert heatmap to RGB using colormap
+            norm = colors.Normalize(vmin=0, vmax=1)
+            sm = plt.cm.ScalarMappable(cmap='jet', norm=norm)
+            heatmap = sm.to_rgba(heatmap)[:, :, :3]  # Remove the alpha channel
+            print("Heatmap converted to RGB")
+
             heatmap = (heatmap * 255).astype(np.uint8)
             overlay = PIL.Image.fromarray(heatmap)
 
-            overlay = PIL.Image.blend(original_image, overlay, alpha=0.5)
+            overlay = PIL.Image.blend(pil_image, overlay, alpha=0.5)
             save_path = f'gradcam_results/gradcam_{image_id}.png'
             overlay.save(save_path)
             print(f"Overlay image saved to {save_path}")
+
+        except Exception as e:
+            print(f"Exception during training: {e}")
             
             
         for batch_idx, (data, target) in enumerate(self.test_loader):
