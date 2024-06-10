@@ -385,7 +385,7 @@ class PruningFineTuner:
 
             if epoch is not None and self.current_epoch == 9:
                 # Get Grad-CAM for the first image in the batch
-                get_gradcam(data[0].unsqueeze(0), f"batch{batch_idx}_image{i}")
+                get_gradcam(data[0].unsqueeze(0), f"batch{batch_idx}_image0")
             
         test_loss /= ctr
         test_accuracy = float(correct) / ctr
