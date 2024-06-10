@@ -341,7 +341,7 @@ class PruningFineTuner:
             image_height = image_tensor.size(2)
 
             # Heatmap as a np array
-            heatmap = (heatmap * 255).astype(np.uint8)
+            heatmap = (heatmap * 255).byte().cpu().numpy()
 
             # Converting heatmap to RGB through colormap
             norm = colors.Normalize(vmin=0, vmax=1)
@@ -351,15 +351,15 @@ class PruningFineTuner:
 
             # Converting heatmap_rgb array to PIL Image
             heatmap_rgb_pil = PIL.Image.fromarray((heatmap_rgb * 255).astype(np.uint8))
-            
-            # Overlay image = resized heatmap
-            overlay = heatmap_rgb_pil.resize((224,224), resample=PIL.Image.BICUBIC)
 
             # Original image in PIL
             original_image = to_pil_image(image_tensor[0].cpu(), mode='RGB')
 
             # Resize original image to 224x224
             original_image_resized = original_image.resize((224, 224), resample=PIL.Image.BICUBIC)
+
+            # Overlay image = resized heatmap
+            overlay = heatmap_rgb_pil.resize((224,224), resample=PIL.Image.BICUBIC)
 
             blended_image = PIL.Image.blend(original_image, overlay, alpha=0.4)
 
