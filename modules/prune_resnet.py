@@ -342,30 +342,19 @@ class PruningFineTuner:
             image_width, image_height = pil_image.size
             extent = [0, image_width, 0, image_height]
 
-            # Create a figure and plot the first image
-            fig, ax = plt.subplots()
-            ax.axis('off') # removes the axis markers
-            
-            # First plot the original image
-            ax.imshow(pil_image)
+            heatmap = to_pil_image(heatmap.detach(), mode='F').resize((image_width, image_height)),resample=Image.BICUBIC)
 
-            # Resize the heatmap to the same size as the input image
-            
-            overlay = to_pil_image(heatmap.detach(), mode='F').resize((256,256),resample=PIL.Image.BICUBIC)
             cmap = colormaps['jet']
-            overlay = (255 * cmap(np.asarray(overlay) ** 2)[:, :, :3]).astype(np.uint8)
+            heatmap = cmap(heatmap)[:, :, :3]  # Remove the alpha channel
+            heatmap = (heatmap * 255).astype(np.uint8)
+            overlay = PIL.Image.fromarray(heatmap)
 
+            overlay = PIL.Image.blend(original_image, overlay, alpha=0.5)
+            save_path = f'gradcam_results/gradcam_{image_id}.png'
+            overlay.save(save_path)
+            print(f"Overlay image saved to {save_path}")
             
-            # Plot the heatmap on the same axes, 
-            # but with alpha < 1 (this defines the transparency of the heatmap)
-            ax.imshow(overlay, alpha=0.4, interpolation='nearest', extent=extent)
-
-            # Save the overlay image
-            save_path = os.path.join(save_dir, f"gradcam_{image_id}.png")
-            plt.savefig(save_path, bbox_inches='tight', pad_inches=0)
-            print("Overlay image saved")
-            plt.close(fig)
-
+            
         for batch_idx, (data, target) in enumerate(self.test_loader):
             if self.args.cuda:
                 data, target = data.cuda(), target.cuda()
