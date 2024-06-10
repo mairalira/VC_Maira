@@ -305,7 +305,7 @@ class PruningFineTuner:
 
             hooks_handler = HooksHandler()  # Create an instance of HooksHandler
             final_conv_layer = self.model.layer4[-1].conv3  # last conv layer of the last block
-            final_conv_layer.register_forward_hook(hooks_handler.forward_hook)
+            #final_conv_layer.register_forward_hook(hooks_handler.forward_hook)
             final_conv_layer.register_full_backward_hook(hooks_handler.backward_hook)
 
             # self.register_hooks(self.model)
