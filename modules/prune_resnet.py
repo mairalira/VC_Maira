@@ -17,7 +17,7 @@ import torch.nn.functional as F
 import numpy as np
 from torchvision.transforms.functional import to_pil_image
 import matplotlib.pyplot as plt
-from matplotlib import colormaps
+from matplotlib import cm, colors
 import PIL
 import torchvision.transforms as transforms
 
@@ -347,7 +347,7 @@ class PruningFineTuner:
 
             # Convert heatmap to RGB using colormap
             norm = colors.Normalize(vmin=0, vmax=1)
-            sm = plt.cm.ScalarMappable(cmap='jet', norm=norm)
+            sm = cm.ScalarMappable(cmap='jet', norm=norm)
             heatmap = sm.to_rgba(heatmap)[:, :, :3]  # Remove the alpha channel
             print("Heatmap converted to RGB")
 
