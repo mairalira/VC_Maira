@@ -302,11 +302,9 @@ class PruningFineTuner:
         # For Grad-CAM
         def get_gradcam(image_tensor, image_id):
             print(f"Processing gradcam for batch {batch_idx}")
-            # Get the first image from the batch
-            image = image_tensor[0].unsqueeze(0)
-            
+
             # Forward pass
-            output = self.model(image)
+            output = self.model(image_tensor)
             
             # Get the predicted class
             predicted_class = output.argmax(dim=1).item()
@@ -338,11 +336,11 @@ class PruningFineTuner:
             # Normalize the heatmap
             heatmap /= torch.max(heatmap)
 
-            pil_image = to_pil_image(image[0], mode='RGB')
-            image_width, image_height = pil_image.size
-            extent = [0, image_width, 0, image_height]
+            # Get the dimensions of the input image
+            image_width = image_tensor.size(3)
+            image_height = image_tensor.size(2)
 
-            heatmap = to_pil_image(heatmap.detach(), mode='F').resize((image_width, image_height), resample=PIL.Image.BICUBIC)
+            heatmap = to_pil_image(heatmap.detach().cpu(), mode='F').resize((image_width, image_height), resample=PIL.Image.BICUBIC)
             heatmap = np.array(heatmap)
 
             # Convert heatmap to RGB using colormap
@@ -354,7 +352,9 @@ class PruningFineTuner:
             heatmap = (heatmap * 255).astype(np.uint8)
             overlay = PIL.Image.fromarray(heatmap)
 
-            overlay = PIL.Image.blend(pil_image, overlay, alpha=0.5)
+            original_image = to_pil_image(image_tensor[0].cpu(), mode='RGB')
+
+            overlay = PIL.Image.blend(original_image, overlay, alpha=0.5)
             save_path = f'gradcam_results/gradcam_{image_id}.png'
             overlay.save(save_path)
             print(f"Overlay image saved to {save_path}")
