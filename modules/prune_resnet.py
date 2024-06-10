@@ -350,6 +350,9 @@ class PruningFineTuner:
             print("Heatmap converted to RGB")
 
             heatmap = (heatmap * 255).astype(np.uint8)
+
+            heatmap = PIL.Image.fromarray(heatmap).resize((image_width, image_height), resample=PIL.Image.BICUBIC)
+            
             overlay = PIL.Image.fromarray(heatmap)
 
             original_image = to_pil_image(image_tensor[0].cpu(), mode='RGB')
