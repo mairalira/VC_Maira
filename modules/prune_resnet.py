@@ -18,7 +18,8 @@ import numpy as np
 from torchvision.transforms.functional import to_pil_image
 import matplotlib.pyplot as plt
 from matplotlib import cm, colors
-import PIL
+import PIL 
+from PIL import Image, ImageOps
 import torchvision.transforms as transforms
 
 class HooksHandler:
@@ -272,13 +273,6 @@ class PruningFineTuner:
 
     gradients = None
     activations = None
-  
-    #@classmethod
-    def register_hooks(cls,model):
-        hooks_handler = HooksHandler()
-        final_conv_layer = model.layer4[-1].conv3  # Assuming we're hooking the last conv layer of the last block
-        final_conv_layer.register_forward_hook(hooks_handler.forward_hook)
-        final_conv_layer.register_full_backward_hook(hooks_handler.backward_hook)
 
     def test(self, epoch=None):
         self.model.eval()
@@ -303,32 +297,36 @@ class PruningFineTuner:
         def get_gradcam(image_tensor, image_id):
             print(f"Processing gradcam for batch {batch_idx}")
 
+            hooks_handler = HooksHandler()
+            final_conv_layer = self.model.layer4[-1].conv3  # last conv layer of the last block
+            final_conv_layer.register_forward_hook(hooks_handler.forward_hook)
+            final_conv_layer.register_full_backward_hook(hooks_handler.backward_hook)
+
             # Forward pass
             output = self.model(image_tensor)
             
             # Get the predicted class
             predicted_class = output.argmax(dim=1).item()
-            print("Predicted class:", predicted_class)
             
             # Zero gradients
             self.model.zero_grad()
             
             # Backward pass
             output[0, predicted_class].backward()
-            print("Backward pass completed")
+
+            # Retrieve activations and gradients
+            activations = hooks_handler.features
+            gradients = hooks_handler.gradients
             
             # Pool the gradients across the channels
             pooled_gradients = torch.mean(gradients, dim=[0, 2, 3])
-            print("Pooled gradients computed")
             
             # Weight the channels by corresponding gradients
             for i in range(activations.size()[1]):
                 activations[:, i, :, :] *= pooled_gradients[i]
-            print("Activations weighted by gradients")
             
             # Average the channels of the activations
             heatmap = torch.mean(activations, dim=1).squeeze()
-            print("Heatmap computed")
             
             # Apply ReLU to the heatmap
             heatmap = F.relu(heatmap)
@@ -336,32 +334,29 @@ class PruningFineTuner:
             # Normalize the heatmap
             heatmap /= torch.max(heatmap)
 
-            # Get the dimensions of the input image
-            image_width = image_tensor.size(3)
-            image_height = image_tensor.size(2)
-
-            # Heatmap as a np array
-            heatmap = (heatmap * 255).byte().cpu().numpy()
-
-            # Converting heatmap to RGB through colormap
-            norm = colors.Normalize(vmin=0, vmax=1)
-            sm = cm.ScalarMappable(cmap='jet', norm=norm)
-            heatmap_rgb = sm.to_rgba(heatmap)[:, :, :3]  # Remove the alpha channel
-            print("Heatmap converted to RGB")
-
-            # Converting heatmap_rgb array to PIL Image
-            heatmap_rgb_pil = PIL.Image.fromarray((heatmap_rgb * 255).astype(np.uint8))
-
-            # Original image in PIL
-            original_image = to_pil_image(image_tensor[0].cpu(), mode='RGB')
-
-            # Resize original image to 224x224
-            original_image_resized = original_image.resize((224, 224), resample=PIL.Image.BICUBIC)
-
-            # Overlay image = resized heatmap
-            overlay = heatmap_rgb_pil.resize((224,224), resample=PIL.Image.BICUBIC)
-
-            blended_image = PIL.Image.blend(original_image_resized, overlay, alpha=0.4)
+            # Convert heatmap to numpy array
+            heatmap = heatmap.detach().cpu().numpy()
+        
+            # Convert original image tensor to PIL image
+            original_image = transforms.ToPILImage()(image_tensor.squeeze())
+        
+            # Create an empty heatmap image with the same size as the original image
+            heatmap_img = Image.new('L', original_image.size)
+        
+            # Scale the heatmap to match the size of the original image
+            heatmap_scaled = heatmap_img.resize(heatmap_img.size, Image.NEAREST)
+        
+            # Apply colormap
+            heatmap_scaled = heatmap_scaled.convert('RGB')
+            heatmap_scaled = ImageOps.colorize(heatmap_scaled, (0, 0, 0), (255, 0, 0))  # Red colormap
+        
+            # Apply transparency
+            heatmap_scaled = heatmap_scaled.convert('RGBA')
+            alpha = 128  # Adjust transparency level
+            heatmap_scaled.putalpha(alpha)
+        
+            # Blend heatmap with original image
+            blended_image = Image.alpha_composite(original_image.convert('RGBA'), heatmap_scaled)
 
             save_path = f'gradcam_results/gradcam_{image_id}.png'
             blended_image.save(save_path)
