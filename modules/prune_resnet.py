@@ -361,7 +361,7 @@ class PruningFineTuner:
             # Overlay image = resized heatmap
             overlay = heatmap_rgb_pil.resize((224,224), resample=PIL.Image.BICUBIC)
 
-            blended_image = PIL.Image.blend(original_image, overlay, alpha=0.4)
+            blended_image = PIL.Image.blend(original_image_resized, overlay, alpha=0.4)
 
             save_path = f'gradcam_results/gradcam_{image_id}.png'
             blended_image.save(save_path)
