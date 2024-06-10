@@ -301,27 +301,33 @@ class PruningFineTuner:
 
         # For Grad-CAM
         def get_gradcam(image_tensor, image_id):
+            print("Starting get_gradcam")
             # Forward pass
             output = self.model(image_tensor)
             
             # Get the predicted class
             predicted_class = output.argmax(dim=1).item()
+            print("Predicted class:", predicted_class)
             
             # Zero gradients
             self.model.zero_grad()
             
             # Backward pass
             output[0, predicted_class].backward()
+            print("Backward pass completed")
             
             # Pool the gradients across the channels
             pooled_gradients = torch.mean(gradients, dim=[0, 2, 3])
+            print("Pooled gradients computed")
             
             # Weight the channels by corresponding gradients
             for i in range(activations.size()[1]):
                 activations[:, i, :, :] *= pooled_gradients[i]
+             print("Activations weighted by gradients")
             
             # Average the channels of the activations
             heatmap = torch.mean(activations, dim=1).squeeze()
+            print("Heatmap computed")
             
             # Apply ReLU to the heatmap
             heatmap = F.relu(heatmap)
@@ -354,7 +360,7 @@ class PruningFineTuner:
             # Save the overlay image
             save_path = os.path.join(save_dir, f"gradcam_{image_id}.png")
             plt.savefig(save_path, bbox_inches='tight', pad_inches=0)
-
+            print("Overlay image saved")
             plt.close(fig)
 
         for batch_idx, (data, target) in enumerate(self.test_loader):
