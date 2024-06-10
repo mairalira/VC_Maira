@@ -301,9 +301,12 @@ class PruningFineTuner:
 
         # For Grad-CAM
         def get_gradcam(image_tensor, image_id):
-            print("Starting get_gradcam")
+            print(f"Processing gradcam for batch {batch_idx}")
+            # Get the first image from the batch
+            image = image_tensor[0].unsqueeze(0)
+            
             # Forward pass
-            output = self.model(image_tensor)
+            output = self.model(image)
             
             # Get the predicted class
             predicted_class = output.argmax(dim=1).item()
@@ -323,7 +326,7 @@ class PruningFineTuner:
             # Weight the channels by corresponding gradients
             for i in range(activations.size()[1]):
                 activations[:, i, :, :] *= pooled_gradients[i]
-             print("Activations weighted by gradients")
+            print("Activations weighted by gradients")
             
             # Average the channels of the activations
             heatmap = torch.mean(activations, dim=1).squeeze()
@@ -335,7 +338,7 @@ class PruningFineTuner:
             # Normalize the heatmap
             heatmap /= torch.max(heatmap)
 
-            pil_image = to_pil_image(image_tensor[0], mode='RGB')
+            pil_image = to_pil_image(image[0], mode='RGB')
             image_width, image_height = pil_image.size
             extent = [0, image_width, 0, image_height]
 
