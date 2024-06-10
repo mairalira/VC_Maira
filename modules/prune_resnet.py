@@ -342,7 +342,7 @@ class PruningFineTuner:
             image_width, image_height = pil_image.size
             extent = [0, image_width, 0, image_height]
 
-            heatmap = to_pil_image(heatmap.detach(), mode='F').resize((image_width, image_height)),resample=Image.BICUBIC)
+            heatmap = to_pil_image(heatmap.detach(), mode='F').resize((image_width, image_height), resample=PIL.Image.BICUBIC)
 
             cmap = colormaps['jet']
             heatmap = cmap(heatmap)[:, :, :3]  # Remove the alpha channel
