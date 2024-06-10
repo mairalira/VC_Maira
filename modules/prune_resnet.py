@@ -358,9 +358,6 @@ class PruningFineTuner:
             save_path = f'gradcam_results/gradcam_{image_id}.png'
             overlay.save(save_path)
             print(f"Overlay image saved to {save_path}")
-
-        except Exception as e:
-            print(f"Exception during training: {e}")
             
             
         for batch_idx, (data, target) in enumerate(self.test_loader):
