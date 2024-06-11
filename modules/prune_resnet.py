@@ -341,6 +341,8 @@ class PruningFineTuner:
             cmap = plt.get_cmap('jet')
             heatmap_cpu = heatmap.cpu().detach().numpy()
             heatmap_colored = (cmap(heatmap_cpu)[:, :, :3] * 255).astype(np.uint8)
+            print('Heatmap colored shape:', heatmap_colored.shape)
+            
 
             #Resizing Images
             heatmap_colored_resized = cv2.resize(heatmap_colored, (224, 224))
