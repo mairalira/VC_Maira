@@ -364,7 +364,7 @@ class PruningFineTuner:
             print('Image array shape:', image_array_resized.shape, flush=True)
             
             
-            blended_image = cv2.addWeighted(image_array_resized, 0.3, heatmap_colored_resized, 0.7, 0)
+            blended_image = cv2.addWeighted(image_array_resized, 0.5, heatmap_colored_resized, 0.5, 0)
             
             # Save the blended image
             save_path = f'gradcam_results/gradcam_{image_id}.png'
