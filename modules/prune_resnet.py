@@ -24,15 +24,17 @@ import torchvision.transforms as transforms
 import cv2
 
 class HooksHandler:
-    #@staticmethod
+    def forward_hook(self, module, input, output):
+        global activations
+        activations = output
+
     def backward_hook(self, module, grad_input, grad_output):
         global gradients
         gradients = grad_output[0]
 
-    #@staticmethod
-    def forward_hook(self, module, input, output):
-        global activations
-        activations = output
+    def full_backward_hook(self, module, grad_input, grad_output):
+        global gradients
+        gradients = grad_output[0]
         
 class PruningFineTuner:
     def __init__(self, args, model):
@@ -279,8 +281,8 @@ class PruningFineTuner:
         hooks_handler = HooksHandler()
         final_conv_layer = model.layer4[-1].conv3  # hooking the last conv layer of the last block
         final_conv_layer.register_forward_hook(hooks_handler.forward_hook)
-        final_conv_layer.register_backward_hook(hooks_handler.backward_hook)
-    
+        final_conv_layer.register_full_backward_hook(hooks_handler.full_backward_hook)
+        
     def test(self, epoch=None):
         self.model.eval()
         test_loss = 0
@@ -302,9 +304,6 @@ class PruningFineTuner:
 
         # For Grad-CAM
         def get_gradcam(image_tensor, image_id):
-            global gradients, activations
-            gradients = None
-            activations = None
             print(f"Processing gradcam for batch {batch_idx}")
 
             # Forward pass
