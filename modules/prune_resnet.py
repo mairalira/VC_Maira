@@ -333,19 +333,19 @@ class PruningFineTuner:
             heatmap /= torch.max(heatmap)
 
             image_array = image_tensor.permute(0, 2, 3, 1).squeeze(0).cpu().numpy()
-            print('Image array shape: ',{image_array.shape})
-
+            image_array_resized = cv2.resize(image_array, (image_array.shape[1]*7, image_array.shape[0]*7))
+            
             # Apply colormap
             cmap = plt.get_cmap('jet')
             heatmap_cpu = heatmap.cpu().detach().numpy()
             heatmap_colored = (cmap(heatmap_cpu)[:, :, :3] * 255).astype(np.uint8)
-            heatmap_colored_resized = cv2.resize(heatmap_colored, (image_array.shape[1], image_array.shape[0]))
-            print('Heatmap resized shape: ',{heatmap_colored_resized.shape})
+            heatmap_colored_resized = cv2.resize(heatmap_colored, (image_array.shape[1]*7, image_array.shape[0]*7))
+            
             
             # Blend the heatmap with the original image
-            image_array = image_array.astype(np.uint8)
+            image_array_resized = image_array.astype(np.uint8)
             heatmap_colored_resized = heatmap_colored_resized.astype(np.uint8)
-            blended_image = cv2.addWeighted(image_array, 0.6, heatmap_colored_resized, 0.4, 0)
+            blended_image = cv2.addWeighted(image_array_resized, 0.6, heatmap_colored_resized, 0.4, 0)
             
             # Save the blended image
             save_path = f'gradcam_results/gradcam_{image_id}.png'
