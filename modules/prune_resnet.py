@@ -339,9 +339,10 @@ class PruningFineTuner:
             # Apply colormap
             cmap = plt.get_cmap('jet')
             heatmap_colored = (cmap(heatmap_resized)[:, :, :3] * 255).astype(np.uint8)
+            heatmap_colored_resized = cv2.resize(heatmap_colored, (image_array.shape[2], image_array.shape[1]))
             
             # Blend the heatmap with the original image
-            blended_image = cv2.addWeighted(image_array, 0.6, heatmap_colored, 0.4, 0)
+            blended_image = cv2.addWeighted(image_array, 0.6, heatmap_colored_resized, 0.4, 0)
             
             # Save the blended image
             save_path = f'gradcam_results/gradcam_{image_id}.png'
