@@ -333,7 +333,7 @@ class PruningFineTuner:
             heatmap /= torch.max(heatmap)
             
             print('Image tensor:', {image_tensor.shape})
-            image_array = image_tensor.permute(0, 2, 3, 1).squeeze(0).cpu().numpy()
+            image_array = image_tensor.cpu().permute(0, 2, 3, 1).squeeze(0).numpy()
             print('Image array:', {image_array.shape})
 
             # Apply colormap
