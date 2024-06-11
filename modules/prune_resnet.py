@@ -371,8 +371,8 @@ class PruningFineTuner:
             save_original_path = f'gradcam_results/original_{image_id}.png'
             save_heatmap_path = f'gradcam_results/heatmap_{image_id}.png'
             
-            cv2.imwrite(save_original_path, image_array_final)
-            cv2.imwrite(save_heatmap_path, heatmap_colored_final)
+            cv2.imwrite(save_original_path, image_array_resized)
+            cv2.imwrite(save_heatmap_path, heatmap_colored_resized)
             cv2.imwrite(save_path, blended_image)
             
             print(f"Overlay image saved to {save_path}")
