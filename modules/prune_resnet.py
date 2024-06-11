@@ -333,7 +333,7 @@ class PruningFineTuner:
 
             image_array = image_tensor.permute(0, 2, 3, 1).squeeze(0).cpu().numpy()
 
-            heatmap_resized = cv2.resize(heatmap.detach().cpu().numpy(), (image_array.shape[1], image_array.shape[0]))
+            heatmap_resized = cv2.resize(heatmap.detach().cpu().numpy(), (image_array.shape[2], image_array.shape[3]))
 
             # Apply colormap
             cmap = plt.get_cmap('jet')
