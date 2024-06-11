@@ -337,7 +337,7 @@ class PruningFineTuner:
             image_tensor = image_tensor.cpu().detach()
             
             image_array = image_tensor[0].permute(1, 2, 0).numpy()
-            print('Image array:', image_array.shape)
+            print('Image array:', image_array.shape, flush=True)
             
             # Normalize the image array for proper visualization
             image_array = (image_array - image_array.min()) / (image_array.max() - image_array.min())
@@ -345,7 +345,7 @@ class PruningFineTuner:
 
             # Apply colormap
             heatmap_cpu = heatmap.cpu().detach().numpy()
-            print('Heatmap shape:', heatmap.shape)
+            print('Heatmap shape:', heatmap.shape, flush=True)
             
             cmap = plt.get_cmap('jet')
             heatmap_colored = (cmap(heatmap_cpu)[:, :, :3] * 255).astype(np.uint8)
@@ -360,8 +360,8 @@ class PruningFineTuner:
             #Resizing Images
             heatmap_colored_resized = cv2.resize(heatmap_colored, (224, 224))
             image_array_resized = cv2.resize(image_array, (224, 224))
-            print('Heatmap shape:', heatmap_colored_resized.shape)
-            print('Image array shape:', image_array_resized.shape)
+            print('Heatmap shape:', heatmap_colored_resized.shape, flush=True)
+            print('Image array shape:', image_array_resized.shape, flush=True)
             
             
             blended_image = cv2.addWeighted(image_array_resized, 0.3, heatmap_colored_resized, 0.7, 0)
