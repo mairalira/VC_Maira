@@ -331,31 +331,19 @@ class PruningFineTuner:
             
             # Normalize the heatmap
             heatmap /= torch.max(heatmap)
-
-            # Ensure image_tensor is 4-dimensional
-            if image_tensor.dim() == 3:  # Add batch dimension if missing
-                image_tensor = image_tensor.unsqueeze(0)
-
-            # Convert image_tensor to numpy array
-            image_array = image_tensor.squeeze(0).cpu().numpy()
-        
-            # Ensure image_array has the correct shape
-            if image_array.ndim != 3:
-                raise ValueError("Image array should be 3-dimensional (height, width, channels)")
-
-
-            image_tensor = image_tensor.permute(0, 2, 3, 1)
-            image_array_resized = cv2.resize(image_tensor.squeeze().cpu().numpy() , (image_tensor.shape[1]*7, image_tensor.shape[0]*7))
+            
+            image_tensor = image_tensor.permute(0, 2, 3, 1).squeeze(0).cpu().numpy()
+            image_array_resized = cv2.resize(image_tensor , (224, 224))
             
             # Apply colormap
             cmap = plt.get_cmap('jet')
             heatmap_cpu = heatmap.cpu().detach().numpy()
             heatmap_colored = (cmap(heatmap_cpu)[:, :, :3] * 255).astype(np.uint8)
-            heatmap_colored_resized = cv2.resize(heatmap_colored, (image_array.shape[1]*7, image_array.shape[0]*7))
+            heatmap_colored_resized = cv2.resize(heatmap_colored, (224, 224))
             
             
             # Blend the heatmap with the original image
-            image_array_resized = image_array_resized.astype(np.uint8)
+            image_array_resized = image_array.astype(np.uint8)
             heatmap_colored_resized = heatmap_colored_resized.astype(np.uint8)
             blended_image = cv2.addWeighted(image_array_resized, 0.7, heatmap_colored_resized, 0.3, 0)
             
