@@ -277,7 +277,7 @@ class PruningFineTuner:
 
     def register_hooks(self, model):
         hooks_handler = HooksHandler()
-        final_conv_layer = model.layer4[-1]#.conv3  # hooking the last conv layer of the last block
+        final_conv_layer = model.layer4[-1].conv3  # hooking the last conv layer of the last block
         final_conv_layer.register_forward_hook(hooks_handler.forward_hook)
         final_conv_layer.register_backward_hook(hooks_handler.backward_hook)
     
@@ -302,6 +302,9 @@ class PruningFineTuner:
 
         # For Grad-CAM
         def get_gradcam(image_tensor, image_id):
+            global gradients, activations
+            gradients = None
+            activations = None
             print(f"Processing gradcam for batch {batch_idx}")
 
             # Forward pass
