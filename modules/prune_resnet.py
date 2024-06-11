@@ -336,28 +336,27 @@ class PruningFineTuner:
             image_height = image_tensor.size(2)
 
             # Convert heatmap to numpy array
-            heatmap = heatmap.detach().cpu().numpy()
+            heatmap = (heatmap * 255).byte().cpu().numpy()
         
-            # Convert original image tensor to PIL image
-            original_image = transforms.ToPILImage()(image_tensor.squeeze())
-        
-            # Create an empty heatmap image with the same size as the original image
-            heatmap_img = Image.new('L', original_image.size)
-        
-            # Scale the heatmap to match the size of the original image
-            heatmap_scaled = heatmap_img.resize(heatmap_img.size, Image.NEAREST)
-        
-            # Apply colormap
-            heatmap_scaled = heatmap_scaled.convert('RGB')
-            heatmap_scaled = ImageOps.colorize(heatmap_scaled, (0, 0, 0), (255, 0, 0))  # Red colormap
-        
-            # Apply transparency
-            heatmap_scaled = heatmap_scaled.convert('RGBA')
-            alpha = 128  # Adjust transparency level
-            heatmap_scaled.putalpha(alpha)
-        
-            # Blend heatmap with original image
-            blended_image = Image.alpha_composite(original_image.convert('RGBA'), heatmap_scaled)
+            # Converting heatmap to RGB through colormap
+            norm = colors.Normalize(vmin=0, vmax=1)
+            sm = cm.ScalarMappable(cmap='jet', norm=norm)
+            heatmap_rgb = sm.to_rgba(heatmap)[:, :, :3]  # Remove the alpha channel
+            print("Heatmap converted to RGB")
+            
+            # Converting heatmap_rgb array to PIL Image
+            heatmap_rgb_pil = PIL.Image.fromarray((heatmap_rgb * 255).astype(np.uint8))
+            
+            # Original image in PIL
+            original_image = to_pil_image(image_tensor[0].cpu(), mode='RGB')
+            
+            # Resize original image to 224x224
+            original_image_resized = original_image.resize((224, 224), resample=PIL.Image.BICUBIC)
+            
+            # Overlay image = resized heatmap
+            overlay = heatmap_rgb_pil.resize((224,224), resample=PIL.Image.BICUBIC)
+
+            blended_image = PIL.Image.blend(original_image_resized, overlay, alpha=0.4)
 
             save_path = f'gradcam_results/gradcam_{image_id}.png'
             blended_image.save(save_path)
