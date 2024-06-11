@@ -331,7 +331,7 @@ class PruningFineTuner:
             # Normalize the heatmap
             heatmap /= torch.max(heatmap)
 
-            image_array = image_tensor.permute(1,2,0).cpu().numpy()
+            image_array = image_tensor.permute(0, 2, 3, 1).squeeze(0).cpu().numpy()
 
             heatmap_resized = cv2.resize(heatmap.detach().cpu().numpy(), (image_array.shape[1], image_array.shape[0]))
 
