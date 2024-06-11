@@ -343,6 +343,8 @@ class PruningFineTuner:
             print('Heatmap resized shape: ',{heatmap_colored_resized.shape})
             
             # Blend the heatmap with the original image
+            image_array = image_array.astype(np.uint8)
+            heatmap_colored_resized = heatmap_colored_resized.astype(np.uint8)
             blended_image = cv2.addWeighted(image_array, 0.6, heatmap_colored_resized, 0.4, 0)
             
             # Save the blended image
