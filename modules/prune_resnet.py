@@ -24,13 +24,13 @@ import torchvision.transforms as transforms
 import cv2
 
 class HooksHandler:
-    @staticmethod
-    def backward_hook(module, grad_input, grad_output):
+    #@staticmethod
+    def backward_hook(self, module, grad_input, grad_output):
         global gradients
         gradients = grad_output[0]
 
-    @staticmethod
-    def forward_hook(module, input, output):
+    #@staticmethod
+    def forward_hook(self, module, input, output):
         global activations
         activations = output
         
@@ -336,20 +336,27 @@ class PruningFineTuner:
             heatmap /= torch.max(heatmap)
 
             image_tensor = image_tensor.cpu().detach()
-            print('Image tensor:', image_tensor.shape)
+            
             image_array = image_tensor[0].permute(1, 2, 0).numpy()
+            print('Image array:', image_array.shape)
             
             # Normalize the image array for proper visualization
             image_array = (image_array - image_array.min()) / (image_array.max() - image_array.min())
             image_array = (image_array * 255).astype(np.uint8)
 
-            print('Image array:', image_array.shape)
-
             # Apply colormap
             heatmap_cpu = heatmap.cpu().detach().numpy()
+            print('Heatmap shape:', heatmap.shape)
+            
             cmap = plt.get_cmap('jet')
             heatmap_colored = (cmap(heatmap_cpu)[:, :, :3] * 255).astype(np.uint8)
-            print('Heatmap colored shape:', heatmap_colored.shape)
+
+            # Ensure image_array and heatmap_colored have matching dimensions
+            if len(image_array.shape) == 3:
+                h, w, _ = image_array.shape
+            else:
+                raise ValueError(f"Unexpected shape for image_array: {image_array.shape}")
+
             
             #Resizing Images
             heatmap_colored_resized = cv2.resize(heatmap_colored, (224, 224))
@@ -357,11 +364,8 @@ class PruningFineTuner:
             print('Heatmap shape:', heatmap_colored_resized.shape)
             print('Image array shape:', image_array_resized.shape)
             
-            # Blend the heatmap with the original image
-            image_array_final = image_array_resized.astype(np.uint8)
-            heatmap_colored_final = heatmap_colored_resized.astype(np.uint8)
             
-            blended_image = cv2.addWeighted(image_array_final, 0.3, heatmap_colored_final, 0.7, 0)
+            blended_image = cv2.addWeighted(image_array_resized, 0.3, heatmap_colored_resized, 0.7, 0)
             
             # Save the blended image
             save_path = f'gradcam_results/gradcam_{image_id}.png'
