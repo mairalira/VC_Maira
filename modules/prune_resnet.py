@@ -331,35 +331,20 @@ class PruningFineTuner:
             # Normalize the heatmap
             heatmap /= torch.max(heatmap)
 
-            # Get the dimensions of the input image
-            image_width = image_tensor.size(3)
-            image_height = image_tensor.size(2)
+            image_array = image_tensor.permute(1,2,0).cpu().numpy()
 
-            # Convert heatmap to numpy array
-            heatmap = (heatmap * 255).byte().cpu().numpy()
-        
-            # Converting heatmap to RGB through colormap
-            norm = colors.Normalize(vmin=0, vmax=1)
-            sm = cm.ScalarMappable(cmap='jet', norm=norm)
-            heatmap_rgb = sm.to_rgba(heatmap)[:, :, :3]  # Remove the alpha channel
-            print("Heatmap converted to RGB")
-            
-            # Converting heatmap_rgb array to PIL Image
-            heatmap_rgb_pil = PIL.Image.fromarray((heatmap_rgb * 255).astype(np.uint8))
-            
-            # Original image in PIL
-            original_image = to_pil_image(image_tensor[0].cpu(), mode='RGB')
-            
-            # Resize original image to 224x224
-            original_image_resized = original_image.resize((224, 224), resample=PIL.Image.BICUBIC)
-            
-            # Overlay image = resized heatmap
-            overlay = heatmap_rgb_pil.resize((224,224), resample=PIL.Image.BICUBIC)
+            heatmap_resized = cv2.resize(heatmap.detach().cpu().numpy(), (image_array.shape[1], image_array.shape[0]))
 
-            blended_image = PIL.Image.blend(original_image_resized, overlay, alpha=0.4)
-
+            # Apply colormap
+            cmap = plt.get_cmap('jet')
+            heatmap_colored = (cmap(heatmap_resized)[:, :, :3] * 255).astype(np.uint8)
+            
+            # Blend the heatmap with the original image
+            blended_image = cv2.addWeighted(image_array, 0.6, heatmap_colored, 0.4, 0)
+            
+            # Save the blended image
             save_path = f'gradcam_results/gradcam_{image_id}.png'
-            blended_image.save(save_path)
+            cv2.imwrite(save_path, blended_image)
             print(f"Overlay image saved to {save_path}")
             
             
