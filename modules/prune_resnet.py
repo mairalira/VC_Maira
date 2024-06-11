@@ -343,7 +343,6 @@ class PruningFineTuner:
             heatmap_colored = (cmap(heatmap_cpu)[:, :, :3] * 255).astype(np.uint8)
             print('Heatmap colored shape:', heatmap_colored.shape)
             
-
             #Resizing Images
             heatmap_colored_resized = cv2.resize(heatmap_colored, (224, 224))
             image_array_resized = cv2.resize(image_array, (224, 224))
@@ -351,17 +350,18 @@ class PruningFineTuner:
             print('Image array shape:', image_array_resized.shape)
             
             # Blend the heatmap with the original image
-            image_array_resized = image_array_resized.astype(np.uint8)
-            heatmap_colored_resized = heatmap_colored_resized.astype(np.uint8)
-            blended_image = cv2.addWeighted(image_array_resized, 0.3, heatmap_colored_resized, 0.7, 0)
+            image_array_final = image_array_resized.astype(np.uint8)
+            heatmap_colored_final = heatmap_colored_resized.astype(np.uint8)
+            
+            blended_image = cv2.addWeighted(image_array_final, 0.3, heatmap_colored_final, 0.7, 0)
             
             # Save the blended image
             save_path = f'gradcam_results/gradcam_{image_id}.png'
             save_original_path = f'gradcam_results/original_{image_id}.png'
             save_heatmap_path = f'gradcam_results/heatmap_{image_id}.png'
             
-            cv2.imwrite(save_original_path, image_array_resized)
-            cv2.imwrite(save_heatmap_path, heatmap_colored_resized)
+            cv2.imwrite(save_original_path, image_array_final)
+            cv2.imwrite(save_heatmap_path, heatmap_colored_final)
             cv2.imwrite(save_path, blended_image)
             
             print(f"Overlay image saved to {save_path}")
