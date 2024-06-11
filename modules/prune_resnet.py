@@ -335,14 +335,19 @@ class PruningFineTuner:
             # Normalize the heatmap
             heatmap /= torch.max(heatmap)
 
-            image_tensor = image_tensor.cpu()
+            image_tensor = image_tensor.cpu().detach()
             print('Image tensor:', image_tensor.shape)
-            image_array = image_tensor.permute(0, 2, 3, 1).squeeze(0).numpy()
+            image_array = image_tensor[0].permute(1, 2, 0).numpy()
+            
+            # Normalize the image array for proper visualization
+            image_array = (image_array - image_array.min()) / (image_array.max() - image_array.min())
+            image_array = (image_array * 255).astype(np.uint8)
+
             print('Image array:', image_array.shape)
 
             # Apply colormap
-            cmap = plt.get_cmap('jet')
             heatmap_cpu = heatmap.cpu().detach().numpy()
+            cmap = plt.get_cmap('jet')
             heatmap_colored = (cmap(heatmap_cpu)[:, :, :3] * 255).astype(np.uint8)
             print('Heatmap colored shape:', heatmap_colored.shape)
             
