@@ -304,7 +304,7 @@ class PruningFineTuner:
 
         # For Grad-CAM
         def get_gradcam(image_tensor, image_id):
-            print(f"Processing gradcam for batch {batch_idx}")
+            #print(f"Processing gradcam for batch {batch_idx}")
 
             # Forward pass
             output = self.model(image_tensor)
@@ -337,7 +337,7 @@ class PruningFineTuner:
             image_tensor = image_tensor.cpu().detach()
             
             image_array = image_tensor[0].permute(1, 2, 0).numpy()
-            print('Image array:', image_array.shape, flush=True)
+            #print('Image array:', image_array.shape, flush=True)
             
             # Normalize the image array for proper visualization
             image_array = (image_array - image_array.min()) / (image_array.max() - image_array.min())
@@ -345,7 +345,7 @@ class PruningFineTuner:
 
             # Apply colormap
             heatmap_cpu = heatmap.cpu().detach().numpy()
-            print('Heatmap shape:', heatmap.shape, flush=True)
+            #print('Heatmap shape:', heatmap.shape, flush=True)
             
             cmap = plt.get_cmap('jet')
             heatmap_colored = (cmap(heatmap_cpu)[:, :, :3] * 255).astype(np.uint8)
@@ -360,9 +360,8 @@ class PruningFineTuner:
             #Resizing Images
             heatmap_colored_resized = cv2.resize(heatmap_colored, (224, 224))
             image_array_resized = cv2.resize(image_array, (224, 224))
-            print('Heatmap shape:', heatmap_colored_resized.shape, flush=True)
-            print('Image array shape:', image_array_resized.shape, flush=True)
-            
+            #print('Heatmap shape:', heatmap_colored_resized.shape, flush=True)
+            #print('Image array shape:', image_array_resized.shape, flush=True)
             
             blended_image = cv2.addWeighted(image_array_resized, 0.5, heatmap_colored_resized, 0.5, 0)
             
@@ -376,7 +375,6 @@ class PruningFineTuner:
             cv2.imwrite(save_path, blended_image)
             
             print(f"Overlay image saved to {save_path}")
-            
             
         for batch_idx, (data, target) in enumerate(self.test_loader):
             if self.args.cuda:
@@ -401,8 +399,8 @@ class PruningFineTuner:
             
         test_loss /= ctr
         test_accuracy = float(correct) / ctr
-        print(
-            f'\nTest set: Average loss: {test_loss:.4f}, Accuracy: {correct}/{ctr} ({100 * test_accuracy:.5f}%)\n')
+        #print(f'\nTest set: Average loss: {test_loss:.4f}, Accuracy: {correct}/{ctr} ({100 * test_accuracy:.5f}%)\n')
+        print(f'\nEpoch: {epoch} | Batch: {batch_idx} | Test Accuracy: {test_accuracy:.5f} | Test Loss: {test_loss:.4f} | FLOPs: {flop_value} | Params: {param_value}\n')
         # self.correct += correct
 
         if self.save_loss:
@@ -419,7 +417,10 @@ class PruningFineTuner:
             print(f'Flops: {flop_value}, Params: {param_value}')
 
             # Save results for each image in the same CSV file with batch_idx as an indexer
-            self.save_results(epoch, batch_idx, test_accuracy, test_loss, flop_value, param_value, target, output)
+            #self.save_(epoch, batch_idx, test_accuracy, test_loss, flop_value, param_value, target, output)
+
+            print(f'\nEpoch: {epoch} | Batch: {batch_idx} | Test Accuracy: {test_accuracy:.5f} | Test Loss: {test_loss:.4f} | FLOPs: {flop_value} | Params: {param_value}\n')
+
 
             return test_accuracy, test_loss, flop_value, param_value, torch.tensor(np.array(target_all)), torch.tensor(np.array(output_all))#, self.df
 
@@ -458,80 +459,107 @@ class PruningFineTuner:
     def prune(self, args):
         self.save_loss = True
         self.model.eval()
-
-        # Get the accuracy before pruning
-        self.temp = 0
-        test_accuracy, test_loss, flop_value, param_value, target, output, df = self.test(epoch=i)
-
-        if df is not None:
-            self.df = df
-
-        # Make sure all the layers are trainable
-        for param in self.model.parameters():
-            param.requires_grad = True
-
-        number_of_filters = self.total_num_filters()
-        num_filters_to_prune_per_iteration = int(number_of_filters * self.args.pr_step)
-        iterations = int(float(number_of_filters) / num_filters_to_prune_per_iteration)
-        iterations = int(iterations * self.args.total_pr)
-
-        self.ratio_pruned_filters = 1.0
-        
-        results_file = f"{args.save_dir}/scenario1_results_{self.args.data_type}_{self.args.arch}_{self.args.method_type}_trial{self.args.trialnum:02d}.csv"
-        results_file_train = f"{args.save_dir}/scenario1_train_{self.args.data_type}_{self.args.arch}_{self.args.method_type}_trial{self.args.trialnum:02d}.csv"
-        
-        self.df = pd.DataFrame(columns=["ratio_pruned", "test_acc", "test_loss", "flops","params","target","output"])
-        self.dt = pd.DataFrame(columns=["ratio_pruned", "train_loss"])
-        
-        self.df.loc[self.COUNT_ROW] = pd.Series({
-                                                 "ratio_pruned": self.ratio_pruned_filters,
-                                                 "test_acc": test_accuracy,
-                                                 "test_loss": test_loss, 
-                                                 "flops": flop_value,
-                                                 "params": param_value,
-                                                 "target": target.cpu().numpy(),
-                                                 "output": output.cpu().detach().numpy(),})
-        self.COUNT_ROW += 1
-        
-        for kk in range(iterations):
-            print("Ranking filters.. {}".format(kk))
-            prune_targets = self.get_candidates_to_prune(
-                num_filters_to_prune_per_iteration, layer_type='conv')
-            assert len(prune_targets) == num_filters_to_prune_per_iteration
-            layers_prunned = {}
-            for layer_index, filter_index in prune_targets:
-                if layer_index not in layers_prunned:
-                    layers_prunned[layer_index] = 0
-                layers_prunned[layer_index] += 1
-
-            print("Layers that will be prunned", layers_prunned)
-            print("Prunning filters.. ")
-            model = self.model.cpu()  # 현재 모델 갖다가..
-            ctr = self.total_num_filters()
-            # Make sure that there are no duplicate filters
-            assert len(set(prune_targets)) == len(prune_targets), [x for x in
-                                                                   Counter(
-                                                                       prune_targets).items()
-                                                                   if x[1] > 1]
-            for layer_index, filter_index in prune_targets:  # Take them out one by one and start cutting them
-                model = prune_conv_layer(model, layer_index, filter_index, criterion=self.args.method_type,
-                                         cuda_flag=self.args.cuda)
-
-                # Assert that one filter is pruned in each step
-                ctr -= 1
-                assert ctr == self.total_num_filters()
-
-            self.model = model.cuda() if self.args.cuda else model
-            assert self.total_num_filters() == number_of_filters - ((kk + 1) * num_filters_to_prune_per_iteration)#, self.total_num_filters()
-
-            ratio_pruned_filters = float(self.total_num_filters()) / number_of_filters
-            print(f"Filters pruned: {100 * ratio_pruned_filters}%")
-
-            # Update the ratio_pruned_filters before fine-tuning
+        for i in range(epochs):
+            print("Epoch: ", i)
+            self.current_epoch = i
+            # Get the accuracy before pruning
+            self.temp = 0
+            test_accuracy, test_loss, flop_value, param_value, target, output, df = self.test(epoch=i)
+    
+            if df is not None:
+                self.df = df
+    
+            # Make sure all the layers are trainable
+            for param in self.model.parameters():
+                param.requires_grad = True
+    
+            number_of_filters = self.total_num_filters()
+            num_filters_to_prune_per_iteration = int(number_of_filters * self.args.pr_step)
+            iterations = int(float(number_of_filters) / num_filters_to_prune_per_iteration)
+            iterations = int(iterations * self.args.total_pr)
+    
+            self.ratio_pruned_filters = 1.0
+            
+            results_file = f"{args.save_dir}/scenario1_results_{self.args.data_type}_{self.args.arch}_{self.args.method_type}_trial{self.args.trialnum:02d}.csv"
+            results_file_train = f"{args.save_dir}/scenario1_train_{self.args.data_type}_{self.args.arch}_{self.args.method_type}_trial{self.args.trialnum:02d}.csv"
+            
+            self.df = pd.DataFrame(columns=["ratio_pruned", "test_acc", "test_loss", "flops","params","target","output"])
+            self.dt = pd.DataFrame(columns=["ratio_pruned", "train_loss"])
+            
+            self.df.loc[self.COUNT_ROW] = pd.Series({
+                                                     "ratio_pruned": self.ratio_pruned_filters,
+                                                     "test_acc": test_accuracy,
+                                                     "test_loss": test_loss, 
+                                                     "flops": flop_value,
+                                                     "params": param_value,
+                                                     "target": target.cpu().numpy(),
+                                                     "output": output.cpu().detach().numpy(),})
+            self.COUNT_ROW += 1
+            
+            for kk in range(iterations):
+                print("Ranking filters.. {}".format(kk))
+                prune_targets = self.get_candidates_to_prune(
+                    num_filters_to_prune_per_iteration, layer_type='conv')
+                assert len(prune_targets) == num_filters_to_prune_per_iteration
+                layers_prunned = {}
+                for layer_index, filter_index in prune_targets:
+                    if layer_index not in layers_prunned:
+                        layers_prunned[layer_index] = 0
+                    layers_prunned[layer_index] += 1
+    
+                print("Layers that will be prunned", layers_prunned)
+                print("Prunning filters.. ")
+                model = self.model.cpu()  # 현재 모델 갖다가..
+                ctr = self.total_num_filters()
+                # Make sure that there are no duplicate filters
+                assert len(set(prune_targets)) == len(prune_targets), [x for x in
+                                                                       Counter(
+                                                                           prune_targets).items()
+                                                                       if x[1] > 1]
+                for layer_index, filter_index in prune_targets:  # Take them out one by one and start cutting them
+                    model = prune_conv_layer(model, layer_index, filter_index, criterion=self.args.method_type,
+                                             cuda_flag=self.args.cuda)
+    
+                    # Assert that one filter is pruned in each step
+                    ctr -= 1
+                    assert ctr == self.total_num_filters()
+    
+                self.model = model.cuda() if self.args.cuda else model
+                assert self.total_num_filters() == number_of_filters - ((kk + 1) * num_filters_to_prune_per_iteration)#, self.total_num_filters()
+    
+                ratio_pruned_filters = float(self.total_num_filters()) / number_of_filters
+                print(f"Filters pruned: {100 * ratio_pruned_filters}%")
+    
+                # Update the ratio_pruned_filters before fine-tuning
+                self.train(optimizer, epochs=10)
+                test_accuracy, test_loss, flop_value, param_value, target, output, df = self.test(epoch=i)  # I tested it after it was cut.
+    
+                self.ratio_pruned_filters = ratio_pruned_filters
+                self.df.loc[self.COUNT_ROW] = pd.Series({"ratio_pruned": ratio_pruned_filters,
+                                                         "test_acc": test_accuracy,
+                                                         "test_loss": test_loss,
+                                                         "flops": flop_value,
+                                                         "params": param_value,
+                                                         "target": target.cpu().numpy(),
+                                                         "output": output.cpu().detach().numpy()})
+                self.COUNT_ROW += 1
+                #self.df.to_csv(_file)
+    
+                if self.args.method_type == 'lrp' or self.args.method_type == 'weight':
+                    self.copy_mask()  # copy mask from my model to the wrapper model
+    
+                print("Fine tuning to recover from prunning iteration.")
+                optimizer = optim.SGD(self.model.parameters(), lr=self.args.lr,
+                                      momentum=self.args.momentum)
+                self.train(optimizer, epochs=10)
+                #self.dt.to_csv(results_file_train)
+    
+            print("Finished. Going to fine tune the model a bit more")
             self.train(optimizer, epochs=10)
-            test_accuracy, test_loss, flop_value, param_value, target, output, df = self.test(epoch=i)  # I tested it after it was cut.
-
+            #self.dt.to_csv(results_file_train)
+    
             self.ratio_pruned_filters = ratio_pruned_filters
+            
             self.df.loc[self.COUNT_ROW] = pd.Series({"ratio_pruned": ratio_pruned_filters,
                                                      "test_acc": test_accuracy,
                                                      "test_loss": test_loss,
@@ -539,30 +567,5 @@ class PruningFineTuner:
                                                      "params": param_value,
                                                      "target": target.cpu().numpy(),
                                                      "output": output.cpu().detach().numpy()})
-            self.COUNT_ROW += 1
-            self.df.to_csv(results_file)
-
-            if self.args.method_type == 'lrp' or self.args.method_type == 'weight':
-                self.copy_mask()  # copy mask from my model to the wrapper model
-
-            print("Fine tuning to recover from prunning iteration.")
-            optimizer = optim.SGD(self.model.parameters(), lr=self.args.lr,
-                                  momentum=self.args.momentum)
-            self.train(optimizer, epochs=10)
-            self.dt.to_csv(results_file_train)
-
-        print("Finished. Going to fine tune the model a bit more")
-        self.train(optimizer, epochs=10)
-        self.dt.to_csv(results_file_train)
-
-        self.ratio_pruned_filters = ratio_pruned_filters
-        
-        self.df.loc[self.COUNT_ROW] = pd.Series({"ratio_pruned": ratio_pruned_filters,
-                                                 "test_acc": test_accuracy,
-                                                 "test_loss": test_loss,
-                                                 "flops": flop_value,
-                                                 "params": param_value,
-                                                 "target": target.cpu().numpy(),
-                                                 "output": output.cpu().detach().numpy()})
-        self.df.to_csv(results_file)
+            #self.df.to_csv(results_file)
 
