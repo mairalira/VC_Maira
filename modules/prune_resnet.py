@@ -321,10 +321,6 @@ class PruningFineTuner:
             
             # Backward pass
             output[0, predicted_class].backward()
-
-            # Retrieve activations and gradients
-            activations = hooks_handler.features
-            gradients = hooks_handler.gradients
             
             # Pool the gradients across the channels
             pooled_gradients = torch.mean(gradients, dim=[0, 2, 3])
