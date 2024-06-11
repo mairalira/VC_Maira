@@ -276,7 +276,7 @@ class PruningFineTuner:
 
     def register_hooks(self, model):
         hooks_handler = HooksHandler()
-        final_conv_layer = model.layer4[-1].conv3  # hooking the last conv layer of the last block
+        final_conv_layer = model.layer4[-1]#.conv3  # hooking the last conv layer of the last block
         final_conv_layer.register_forward_hook(hooks_handler.forward_hook)
         final_conv_layer.register_backward_hook(hooks_handler.backward_hook)
     
