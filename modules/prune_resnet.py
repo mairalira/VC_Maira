@@ -339,7 +339,7 @@ class PruningFineTuner:
             heatmap_colored_resized = cv2.resize(heatmap_colored, (224, 224))
             
             print('Image tensor:', {image_tensor})
-            image_array = image_tensor.permute(0, 2, 3, 1).squeeze(0).cpu().numpy()
+            image_array = image_tensor.detach().cpu().numpy()
             print('Image array:', {image_array})
             image_array_resized = cv2.resize(image_array, (224, 224))
             
