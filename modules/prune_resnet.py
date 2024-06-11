@@ -332,8 +332,20 @@ class PruningFineTuner:
             # Normalize the heatmap
             heatmap /= torch.max(heatmap)
 
-            image_array = image_tensor.permute(0, 2, 3, 1).cpu().numpy()
-            image_array_resized = cv2.resize(image_array, (image_array.shape[1]*7, image_array.shape[0]*7))
+            # Ensure image_tensor is 4-dimensional
+            if image_tensor.dim() == 3:  # Add batch dimension if missing
+                image_tensor = image_tensor.unsqueeze(0)
+
+            # Convert image_tensor to numpy array
+            image_array = image_tensor.squeeze(0).cpu().numpy()
+        
+            # Ensure image_array has the correct shape
+            if image_array.ndim != 3:
+                raise ValueError("Image array should be 3-dimensional (height, width, channels)")
+
+
+            image_tensor = image_tensor.permute(0, 2, 3, 1)
+            image_array_resized = cv2.resize(image_tensor , (image_tensor.shape[1]*7, image_tensor.shape[0]*7))
             
             # Apply colormap
             cmap = plt.get_cmap('jet')
