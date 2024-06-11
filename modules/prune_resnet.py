@@ -339,12 +339,11 @@ class PruningFineTuner:
             heatmap_colored_resized = cv2.resize(heatmap_colored, (224, 224))
             
             image_array = image_tensor.permute(0, 2, 3, 1).squeeze(0).cpu().numpy()
-            image_array_resized = cv2.resize(image_array , (224, 224))
-            
+            image_array_resized = cv2.resize(image_array, (224, 224))
             
             # Blend the heatmap with the original image
             image_array_resized = image_array_resized.astype(np.uint8)
-            #heatmap_colored_resized = heatmap_colored_resized.astype(np.uint8)
+            heatmap_colored_resized = heatmap_colored_resized.astype(np.uint8)
             blended_image = cv2.addWeighted(image_array_resized, 0.3, heatmap_colored_resized, 0.7, 0)
             
             # Save the blended image
