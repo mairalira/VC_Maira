@@ -109,11 +109,19 @@ if __name__ == '__main__':
         print(f'Start pruning! Dataset: {args.data_type}, Architecture: {args.arch}, Pruning Method: {args.method_type},'
               f' Total Pruning rate: {args.total_pr}, Pruning step: {args.pr_step}')
         fine_tuner.prune(args)
+        # Define the results file paths
+        results_file = f"{args.save_dir}/scenario1_results_{args.data_type}_{args.arch}_{args.method_type}_trial{args.trialnum:02d}.csv"
+        results_file_train = f"{args.save_dir}/scenario1_train_{args.data_type}_{args.arch}_{args.method_type}_trial{args.trialnum:02d}.csv"
+
+        # Save the initial evaluation results
+        fine_tuner.df.to_csv(results_file)
+        #fine_tuner.dt.to_csv(results_file_train)
+    
     else:
         # If pruning is not performed, ensure initial evaluation and results saving
-        print(f'Evaluating model without pruning.  Dataset: {args.data_type}, Architecture: {args.arch}')
+        #print(f'Evaluating model without pruning.  Dataset: {args.data_type}, Architecture: {args.arch}')
         #args.save_loss=True
-        test_accuracy, test_loss, flop_value, param_value, target, output  = fine_tuner.test()
+        #test_accuracy, test_loss, flop_value, param_value, target, output  = fine_tuner.test()
 
         # Initialize the DataFrame to store results
         #fine_tuner.df = pd.DataFrame(columns=["ratio_pruned", "test_acc", "test_loss", "flops", "params", "target", "output"])
