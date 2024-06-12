@@ -201,7 +201,7 @@ class PruningFineTuner:
                                                         "params": param_value, 
                                                         #"target": target.cpu().numpy().tolist(),
                                                         #"output": output.cpu().detach().numpy().tolist()
-                                                        }))
+                                                        })
             self.COUNT_TRAIN += 1
 
     def train_batch(self, optimizer, batch_idx, batch, label, rank_filters):
