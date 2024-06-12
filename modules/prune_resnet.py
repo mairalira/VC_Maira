@@ -194,14 +194,14 @@ class PruningFineTuner:
         if self.save_loss == True and not rank_filters:# == False: #save train_loss only during fine-tuning
             self.dt.loc[self.COUNT_TRAIN] = pd.Series({"ratio_pruned": self.ratio_pruned_filters,
                                                        "train_loss": self.train_loss / len(self.train_loader.dataset)})
-            self.df.loc[self.COUNT_TRAIN] = pd.Series({"ratio_pruned": self.ratio_pruned_filters,
-                                                        "test_acc": test_accuracy,
-                                                        "test_loss": test_loss,
-                                                        "flops": flop_value,
-                                                        "params": param_value, 
-                                                        #"target": target.cpu().numpy().tolist(),
-                                                        #"output": output.cpu().detach().numpy().tolist()
-                                                        })
+            #self.df.loc[self.COUNT_TRAIN] = pd.Series({"ratio_pruned": self.ratio_pruned_filters,
+                                                        #"test_acc": test_accuracy,
+                                                        #"test_loss": test_loss,
+                                                        #"flops": flop_value,
+                                                        #"params": param_value, 
+                                                        ##"target": target.cpu().numpy().tolist(),
+                                                        ##"output": output.cpu().detach().numpy().tolist()
+                                                        #})
             self.COUNT_TRAIN += 1
 
     def train_batch(self, optimizer, batch_idx, batch, label, rank_filters):
@@ -396,6 +396,16 @@ class PruningFineTuner:
         test_loss /= ctr
         test_accuracy = float(correct) / ctr
         print(f'\nEpoch: {epoch} | Batch: {batch_idx} | Test Accuracy: {test_accuracy:.5f} | Test Loss: {test_loss:.4f} | FLOPs: {flop_value} | Params: {param_value}\n')
+
+        self.df.loc[self.current_epoch] = pd.Series({"ratio_pruned": self.ratio_pruned_filters,
+                                                     "test_acc": test_accuracy,
+                                                     "test_loss": test_loss,
+                                                     "flops": flop_value,
+                                                     "params": param_value
+                                                    })
+                                                        ##"target": target.cpu().numpy().tolist(),
+                                                        ##"output": output.cpu().detach().numpy().tolist()
+                                                        #})
         
         return test_accuracy, test_loss, flop_value, param_value, torch.tensor(np.array(target_all)), torch.tensor(np.array(output_all))#, self.df
 
