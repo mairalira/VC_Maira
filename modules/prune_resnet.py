@@ -368,46 +368,39 @@ class PruningFineTuner:
             
             #print(f"Overlay image saved to {save_path}")
             
-        for batch_idx, (data, target) in enumerate(self.test_loader):
-            if self.args.cuda:
-                data, target = data.cuda(), target.cuda()
+        with torch.no_grad():
+            for batch_idx, (data, target) in enumerate(self.test_loader):
+                if self.args.cuda:
+                    data, target = data.cuda(), target.cuda()
+    
+                data, target = Variable(data), Variable(target)
+                output = self.model(data)
+    
+                # Test loss
+                test_loss += self.criterion(output, target).item()
+                pred = output.data.max(1, keepdim=True)[1]
+                correct += pred.eq(target.data.view_as(pred)).cpu().sum()
                 
-            data, target = Variable(data), Variable(target)
-            output=self.model(data)
-
-            # Test loss
-            test_loss += self.criterion(output, target).item()
-            pred = output.data.max(1,keepdim=True)[1]
-            correct += pred.eq(target.data.view_as(pred)).cpu().sum()
-            
-            target_all.extend(target.cpu().numpy())
-            output_all.extend(output.cpu().detach().numpy())
-
-            ctr += len(pred)
-            
-            #Get Grad-CAM for the first image in the batch
-            #print('Get gradcams')
-            get_gradcam(data[0].unsqueeze(0), f"batch{batch_idx}_image0")
-            
-            #if epoch is not None and self.current_epoch == 9:
-                # Get Grad-CAM for the first image in the batch
-                #get_gradcam(data[0].unsqueeze(0), f"batch{batch_idx}_image0")
+                target_all.extend(target.cpu().numpy())
+                output_all.extend(output.cpu().detach().numpy())
+    
+                ctr += len(pred)
+                    
+                # Exclude Grad-CAM from the torch.no_grad() context
+                with torch.enable_grad():
+                    get_gradcam(data[0].unsqueeze(0), f"batch{batch_idx}_image0")
             
         test_loss /= ctr
         test_accuracy = float(correct) / ctr
         print(f'\nEpoch: {epoch} | Batch: {batch_idx} | Test Accuracy: {test_accuracy:.5f} | Test Loss: {test_loss:.4f} | FLOPs: {flop_value} | Params: {param_value}\n')
-
+    
         self.df.loc[self.current_epoch] = pd.Series({"ratio_pruned": self.ratio_pruned_filters,
                                                      "test_acc": test_accuracy,
                                                      "test_loss": test_loss,
                                                      "flops": flop_value,
                                                      "params": param_value
                                                     })
-                                                        ##"target": target.cpu().numpy().tolist(),
-                                                        ##"output": output.cpu().detach().numpy().tolist()
-                                                        #})
-        
-        return test_accuracy, test_loss, flop_value, param_value, torch.tensor(np.array(target_all)), torch.tensor(np.array(output_all))#, self.df
+        return test_accuracy, test_loss, flop_value, param_value, torch.tensor(np.array(target_all)), torch.tensor(np.array(output_all))
 
 
         #if self.save_loss:
