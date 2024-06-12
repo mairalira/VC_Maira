@@ -391,7 +391,7 @@ class PruningFineTuner:
                 # Exclude Grad-CAM from the torch.no_grad() context
                 with torch.enable_grad():
                     if self.current_epoch == self.args.epochs:
-                    get_gradcam(data[0].unsqueeze(0), f"batch{batch_idx}_image0")
+                        get_gradcam(data[0].unsqueeze(0), f"batch{batch_idx}_image0")
             
         test_loss /= ctr
         test_accuracy = float(correct) / ctr
