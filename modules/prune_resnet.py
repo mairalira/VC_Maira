@@ -384,11 +384,6 @@ class PruningFineTuner:
                 output_all.extend(output.cpu().detach().numpy())
     
                 ctr += len(pred)
-                    
-                # Exclude Grad-CAM from the torch.no_grad() context
-                with torch.enable_grad():
-                    if self.current_epoch == self.args.epochs:
-                        get_gradcam(data[0].unsqueeze(0), f"batch{batch_idx}_image0")
             
         test_loss /= ctr
         test_accuracy = float(correct) / ctr
@@ -400,9 +395,8 @@ class PruningFineTuner:
                                                      "flops": flop_value,
                                                      "params": param_value
                                                     })
-        return test_accuracy, test_loss, flop_value, param_value, torch.tensor(np.array(target_all)), torch.tensor(np.array(output_all))
-
-
+        #return test_accuracy, test_loss, flop_value, param_value, torch.tensor(np.array(target_all)), torch.tensor(np.array(output_all))
+        
         if self.save_loss:
             sample_batch = torch.FloatTensor(1, 3, 32, 32).cuda() if self.args.cuda else torch.FloatTensor(1, 3, 32, 32)
             self.model = fcm.add_flops_counting_methods(self.model)
@@ -423,10 +417,19 @@ class PruningFineTuner:
                                                          #"params": param_value
                                                         #})
 
-            return test_accuracy, test_loss, flop_value, param_value, torch.tensor(np.array(target_all)), torch.tensor(np.array(output_all))#, self.df
+            # Computing Grad-CAM for the last epoch
+            if self.current_epoch == self.args.epochs:
+                with torch.enable_grad():
+                    for batch_idx, (data, target) in enumerate(self.test_loader):
+                        if self.args.cuda:
+                            data, target = data.cuda(), target.cuda()
+                        get_gradcam(data[0].unsqueeze(0), f"batch{batch_idx}_image0")
 
-        #else:
-        #    return test_accuracy, test_loss, None, None, target, output#, self.df
+            return test_accuracy, test_loss, flop_value, param_value, torch.tensor(np.array(target_all)), torch.tensor(np.array(output_all))
+
+        else:
+            return test_accuracy, test_loss, None, None, torch.tensor(np.array(target_all)), torch.tensor(np.array(output_all))
+    
 
     def get_candidates_to_prune(self, num_filters_to_prune, layer_type='conv'):
         self.prunner.reset()
