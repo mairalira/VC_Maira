@@ -28,7 +28,7 @@ def get_args():
                         help='input batch size for testing (default: 20)')
     parser.add_argument('--trialnum', type=int, default=1, metavar='N',
                         help='trial number (default: 1)')
-    parser.add_argument('--epochs', type=int, default=10, metavar='N',
+    parser.add_argument('--epochs', type=int, default=5, metavar='N',
                         help='number of epochs to train (default: 10)')
     parser.add_argument('--lr', type=float, default=0.1, metavar='LR',
                         help='learning rate (default: 0.001)')
