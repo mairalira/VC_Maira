@@ -28,13 +28,13 @@ def get_args():
                         help='input batch size for testing (default: 20)')
     parser.add_argument('--trialnum', type=int, default=1, metavar='N',
                         help='trial number (default: 1)')
-    parser.add_argument('--epochs', type=int, default=5, metavar='N',
+    parser.add_argument('--epochs', type=int, default=10, metavar='N',
                         help='number of epochs to train (default: 10)')
     parser.add_argument('--lr', type=float, default=0.001, metavar='LR',
                         help='learning rate (default: 0.001)')
     parser.add_argument('--momentum', type=float, default=0.9, metavar='M',
                         help='SGD momentum (default: 0.5)')
-    parser.add_argument('--weight-decay', '--wd', type=float, default=5e-4, metavar='W',
+    parser.add_argument('--weight-decay', '--wd', type=float, default=1e-4, metavar='W',
                         help='weight decay (default: 1e-4)')
     parser.add_argument('--no-cuda', action='store_true', default=False,
                         help='disables CUDA training')
@@ -54,7 +54,7 @@ def get_args():
     parser.add_argument('--method-type', type=str, default='lrp', metavar='N',
                         help='model architecture selection: grad/taylor/weight/lrp')
 
-    parser.add_argument('--total-pr', type=float, default=0.9, metavar='M',
+    parser.add_argument('--total-pr', type=float, default=0.5, metavar='M',
                         help='Total pruning rate')
     parser.add_argument('--pr-step', type=float, default=0.1, metavar='M',
                         help='Pruning step: 0.1 (10% for each step)')
