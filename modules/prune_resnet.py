@@ -153,7 +153,7 @@ class PruningFineTuner:
             
             try: 
                 self.train_epoch(optimizer=optimizer)
-                acc, _, _, _, _, _ = self.test(epoch=i)
+                acc, _, _, _, _, _ = self.test()
 
                 if acc > self.best_acc:
                     if not os.path.isdir('checkpoint'):
@@ -165,12 +165,12 @@ class PruningFineTuner:
                 optimizer.step() #optimizer before scheduler
                 scheduler.step()
 
-                #self.test(epoch=i)
+                #self.test()
             
             except Exception as e: #during fine-tuning
                 print(f'Exception during training: {e}')
                 self.train_epoch(optimizer=optimizer)
-                test_accuracy, test_loss, flop_value, param_value, target, output = self.test(epoch=i)
+                test_accuracy, test_loss, flop_value, param_value, target, output = self.test()
                 #self.df.loc[self.COUNT_ROW] = pd.Series({
                                                         #"ratio_pruned": self.ratio_pruned_filters,
                                                         #"test_acc": test_accuracy,
@@ -277,7 +277,7 @@ class PruningFineTuner:
         final_conv_layer.register_forward_hook(hooks_handler.forward_hook)
         final_conv_layer.register_full_backward_hook(hooks_handler.full_backward_hook)
         
-    def test(self, epoch=None):
+    def test(self):
         self.model.eval()
         test_loss = 0
         correct = 0
