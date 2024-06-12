@@ -41,7 +41,7 @@ class PruningFineTuner:
         torch.manual_seed(args.seed)
         self.ratio_pruned_filters = 1.0
         self.current_epoch = 0  # Initialize current_epoch variable
-        #self.df = pd.DataFrame(columns=["ratio_pruned", "test_acc", "test_loss", "flops","params", "target", "output"])
+        self.df = pd.DataFrame(columns=["ratio_pruned", "test_acc", "test_loss", "flops","params"])# "target", "output"])
         self.dt = pd.DataFrame(columns=["ratio_pruned", "train_loss"])
         
         if args.cuda:
@@ -92,7 +92,6 @@ class PruningFineTuner:
         self.COUNT_ROW = 0
         self.COUNT_TRAIN = 0
         self.best_acc = 0
-        #self.save_loss = False
         self.save_loss = True
 
     def setup_dataloaders(self, dataset_type=None):
@@ -195,6 +194,14 @@ class PruningFineTuner:
         if self.save_loss == True and not rank_filters:# == False: #save train_loss only during fine-tuning
             self.dt.loc[self.COUNT_TRAIN] = pd.Series({"ratio_pruned": self.ratio_pruned_filters,
                                                        "train_loss": self.train_loss / len(self.train_loader.dataset)})
+            self.df.loc[self.COUNT_TRAIN] = pd.Series({"ratio_pruned": self.ratio_pruned_filters,
+                                                        "test_acc": test_accuracy,
+                                                        "test_loss": test_loss,
+                                                        "flops": flop_value,
+                                                        "params": param_value, 
+                                                        #"target": target.cpu().numpy().tolist(),
+                                                        #"output": output.cpu().detach().numpy().tolist()
+                                                        }))
             self.COUNT_TRAIN += 1
 
     def train_batch(self, optimizer, batch_idx, batch, label, rank_filters):
