@@ -287,9 +287,9 @@ class PruningFineTuner:
         target_all = []
         output_all = []
 
-        print("Test method - Epoch:", epoch)
+        print("Test method - Epoch:", self.current_epoch)
         
-        if epoch is not None and epoch != self.current_epoch:  # Check if it's the last epoch
+        if self.args.epochs is not None and self.current_epoch != self.args.epochs:  # Check if it's the last epoch
             return
 
         save_dir = 'gradcam_results'
