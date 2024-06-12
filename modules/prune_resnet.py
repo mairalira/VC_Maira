@@ -137,6 +137,8 @@ class PruningFineTuner:
     def train(self, optimizer=None, epochs=None): #corrected epochs argument (was epoches)
         if epochs is None:
             epochs = self.args.epochs
+
+        print("Train method - Epochs:", epochs)  # Debug print
             
         if optimizer is None:
             optimizer = optim.SGD(self.model.parameters(), lr=self.args.lr,
@@ -285,6 +287,8 @@ class PruningFineTuner:
         target_all = []
         output_all = []
 
+        print("Test method - Epoch:", epoch)
+        
         if epoch is not None and epoch != self.current_epoch:  # Check if it's the last epoch
             return
 
@@ -463,6 +467,9 @@ class PruningFineTuner:
     def prune(self, args, epochs=None):
         if epochs is None:
             epochs = self.args.epochs
+
+        print("Prune method - Epochs:", epochs)  # Debug print
+        
         self.save_loss = True
 
         # Fine-tune the model before pruning
@@ -470,7 +477,7 @@ class PruningFineTuner:
         
         self.model.eval()
         for i in range(epochs):
-            print("Epoch: ", i)
+            print("Pruning Loop - Epoch:", i)  # Debug print
             self.current_epoch = i
             # Get the accuracy before pruning
             self.temp = 0
