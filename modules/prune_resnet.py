@@ -470,7 +470,8 @@ class PruningFineTuner:
             self.current_epoch = i
             # Get the accuracy before pruning
             self.temp = 0
-            test_accuracy, test_loss, flop_value, param_value, target, output, df = self.test()
+            #test_accuracy, test_loss, flop_value, param_value, target, output, df = self.test()
+            test_accuracy, test_loss, flop_value, param_value, target, output= self.test()
     
             if df is not None:
                 self.df = df
