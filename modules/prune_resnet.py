@@ -289,8 +289,8 @@ class PruningFineTuner:
 
         print("Test method - Epoch:", self.current_epoch)
         
-        if self.args.epochs is not None and self.current_epoch != self.args.epochs:  # Check if it's the last epoch
-            return None
+        #if self.args.epochs is not None and self.current_epoch != self.args.epochs:  # Check if it's the last epoch
+            #return None
 
         save_dir = 'gradcam_results'
         os.makedirs(save_dir, exist_ok=True)
