@@ -54,7 +54,7 @@ def get_args():
     parser.add_argument('--method-type', type=str, default='lrp', metavar='N',
                         help='model architecture selection: grad/taylor/weight/lrp')
 
-    parser.add_argument('--total-pr', type=float, default=0.5, metavar='M',
+    parser.add_argument('--total-pr', type=float, default=0.1, metavar='M',
                         help='Total pruning rate')
     parser.add_argument('--pr-step', type=float, default=0.1, metavar='M',
                         help='Pruning step: 0.1 (10% for each step)')
