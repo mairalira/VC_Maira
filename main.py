@@ -116,8 +116,8 @@ if __name__ == '__main__':
         test_accuracy, test_loss, flop_value, param_value, target, output  = fine_tuner.test()
 
         # Initialize the DataFrame to store results
-        fine_tuner.df = pd.DataFrame(columns=["ratio_pruned", "test_acc", "test_loss", "flops", "params", "target", "output"])
-        fine_tuner.dt = pd.DataFrame(columns=["epoch", "train_acc", "train_loss"])
+        #fine_tuner.df = pd.DataFrame(columns=["ratio_pruned", "test_acc", "test_loss", "flops", "params", "target", "output"])
+        #fine_tuner.dt = pd.DataFrame(columns=["epoch", "train_acc", "train_loss"])
 
         # Create a dictionary with evaluation results
         evaluation_results = {
@@ -130,13 +130,13 @@ if __name__ == '__main__':
                             "output": output.cpu().detach().numpy()
                             }
         
-        fine_tuner.df.loc[fine_tuner.COUNT_ROW] = pd.Series(evaluation_results)        
-        fine_tuner.COUNT_ROW += 1
+        #fine_tuner.df.loc[fine_tuner.COUNT_ROW] = pd.Series(evaluation_results)        
+        #fine_tuner.COUNT_ROW += 1
 
         # Define the results file paths
         results_file = f"{args.save_dir}/scenario1_results_{args.data_type}_{args.arch}_{args.method_type}_trial{args.trialnum:02d}.csv"
         results_file_train = f"{args.save_dir}/scenario1_train_{args.data_type}_{args.arch}_{args.method_type}_trial{args.trialnum:02d}.csv"
 
         # Save the initial evaluation results
-        fine_tuner.df.to_csv(results_file)
-        fine_tuner.dt.to_csv(results_file_train)
+        #fine_tuner.df.to_csv(results_file)
+        #fine_tuner.dt.to_csv(results_file_train)
