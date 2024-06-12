@@ -212,7 +212,7 @@ class PruningFineTuner:
                 with torch.enable_grad():
                     output = self.wrapper_model(batch)
 
-                print("Computing LRP")
+                #print("Computing LRP")
 
                 # Map the original targets to [0, num_selected_classes)
                 T = torch.zeros_like(output)
@@ -503,7 +503,7 @@ class PruningFineTuner:
                 print(f"Filters pruned: {100 * ratio_pruned_filters}%")
     
                 # Update the ratio_pruned_filters before fine-tuning
-                self.train(optimizer, epochs=10)
+                self.train()
                 #test_accuracy, test_loss, flop_value, param_value, target, output, df = self.test(epoch=i)  # I tested it after it was cut.
                 test_accuracy, test_loss, flop_value, param_value, target, output = self.test(epoch=i)
                 
@@ -513,12 +513,12 @@ class PruningFineTuner:
                     self.copy_mask()  # copy mask from my model to the wrapper model
     
                 print("Fine tuning to recover from prunning iteration.")
-                optimizer = optim.SGD(self.model.parameters(), lr=self.args.lr,
-                                      momentum=self.args.momentum)
-                self.train(optimizer, epochs=10)
+                #optimizer = optim.SGD(self.model.parameters(), lr=self.args.lr,
+                                      #momentum=self.args.momentum)
+                self.train()
     
             print("Finished. Going to fine tune the model a bit more")
-            self.train(optimizer, epochs=10)
+            self.train()
     
             self.ratio_pruned_filters = ratio_pruned_filters
 
