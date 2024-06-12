@@ -406,30 +406,30 @@ class PruningFineTuner:
         return test_accuracy, test_loss, flop_value, param_value, torch.tensor(np.array(target_all)), torch.tensor(np.array(output_all))
 
 
-            if self.save_loss:
-                sample_batch = torch.FloatTensor(1, 3, 32, 32).cuda() if self.args.cuda else torch.FloatTensor(1, 3, 32, 32)
-                self.model = fcm.add_flops_counting_methods(self.model)
-                self.model.eval().start_flops_count()
-                _ = self.model(sample_batch)
-                flop_value = flop.flops_to_string_value(self.model.compute_average_flops_cost())
-                param_value = flop.get_model_parameters_number_value_mask(self.model)
-                self.model.eval().stop_flops_count()
-                self.model = fcm.remove_flops_counting_methods(self.model)
-                #print(f'Flops: {flop_value}, Params: {param_value}')
-    
-                print(f'\nEpoch: {epoch} | Batch: {batch_idx} | Test Accuracy: {test_accuracy:.5f} | Test Loss: {test_loss:.4f} | FLOPs: {flop_value} | Params: {param_value}\n')
-    
-                self.df.loc[self.current_epoch] = pd.Series({"ratio_pruned": self.ratio_pruned_filters,
-                                                             "test_acc": test_accuracy,
-                                                             "test_loss": test_loss,
-                                                             "flops": flop_value,
-                                                             "params": param_value
-                                                            })
-    
-                return test_accuracy, test_loss, flop_value, param_value, torch.tensor(np.array(target_all)), torch.tensor(np.array(output_all))#, self.df
-    
-            #else:
-            #    return test_accuracy, test_loss, None, None, target, output#, self.df
+        if self.save_loss:
+            sample_batch = torch.FloatTensor(1, 3, 32, 32).cuda() if self.args.cuda else torch.FloatTensor(1, 3, 32, 32)
+            self.model = fcm.add_flops_counting_methods(self.model)
+            self.model.eval().start_flops_count()
+            _ = self.model(sample_batch)
+            flop_value = flop.flops_to_string_value(self.model.compute_average_flops_cost())
+            param_value = flop.get_model_parameters_number_value_mask(self.model)
+            self.model.eval().stop_flops_count()
+            self.model = fcm.remove_flops_counting_methods(self.model)
+            #print(f'Flops: {flop_value}, Params: {param_value}')
+
+            print(f'\nEpoch: {epoch} | Batch: {batch_idx} | Test Accuracy: {test_accuracy:.5f} | Test Loss: {test_loss:.4f} | FLOPs: {flop_value} | Params: {param_value}\n')
+
+            self.df.loc[self.current_epoch] = pd.Series({"ratio_pruned": self.ratio_pruned_filters,
+                                                         "test_acc": test_accuracy,
+                                                         "test_loss": test_loss,
+                                                         "flops": flop_value,
+                                                         "params": param_value
+                                                        })
+
+            return test_accuracy, test_loss, flop_value, param_value, torch.tensor(np.array(target_all)), torch.tensor(np.array(output_all))#, self.df
+
+        #else:
+        #    return test_accuracy, test_loss, None, None, target, output#, self.df
 
     def get_candidates_to_prune(self, num_filters_to_prune, layer_type='conv'):
         self.prunner.reset()
