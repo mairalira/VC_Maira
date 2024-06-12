@@ -22,7 +22,7 @@ def get_args():
 
     parser.add_argument('--arch', default='vgg16', metavar='ARCH',
                         help='model architecture: resnet18, resnet50, vgg16, alexnet')
-    parser.add_argument('--train-batch-size', type=int, default=128, metavar='N',
+    parser.add_argument('--train-batch-size', type=int, default=64, metavar='N',
                         help='input batch size for training (default: 32)')
     parser.add_argument('--test-batch-size', type=int, default=64, metavar='N',
                         help='input batch size for testing (default: 20)')
