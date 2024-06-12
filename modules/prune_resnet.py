@@ -359,7 +359,7 @@ class PruningFineTuner:
             cv2.imwrite(save_heatmap_path, heatmap_colored_resized)
             cv2.imwrite(save_path, blended_image)
             
-            print(f"Overlay image saved to {save_path}")
+            #print(f"Overlay image saved to {save_path}")
             
         for batch_idx, (data, target) in enumerate(self.test_loader):
             if self.args.cuda:
@@ -377,40 +377,44 @@ class PruningFineTuner:
             output_all.extend(output.cpu().detach().numpy())
 
             ctr += len(pred)
-
-            if epoch is not None and self.current_epoch == 9:
+            
+            #Get Grad-CAM for the first image in the batch
+            print('Get gradcams')
+            get_gradcam(data[0].unsqueeze(0), f"batch{batch_idx}_image0")
+            
+            #if epoch is not None and self.current_epoch == 9:
                 # Get Grad-CAM for the first image in the batch
-                get_gradcam(data[0].unsqueeze(0), f"batch{batch_idx}_image0")
+                #get_gradcam(data[0].unsqueeze(0), f"batch{batch_idx}_image0")
             
         test_loss /= ctr
         test_accuracy = float(correct) / ctr
-        #print(f'\nTest set: Average loss: {test_loss:.4f}, Accuracy: {correct}/{ctr} ({100 * test_accuracy:.5f}%)\n')
         print(f'\nEpoch: {epoch} | Batch: {batch_idx} | Test Accuracy: {test_accuracy:.5f} | Test Loss: {test_loss:.4f} | FLOPs: {flop_value} | Params: {param_value}\n')
-        # self.correct += correct
+        
+        return test_accuracy, test_loss, flop_value, param_value, torch.tensor(np.array(target_all)), torch.tensor(np.array(output_all))#, self.df
 
-        if self.save_loss:
-            sample_batch = torch.FloatTensor(1, 3, 32,
-                                             32).cuda() if self.args.cuda else torch.FloatTensor(
-                1, 3, 32, 32)
-            self.model = fcm.add_flops_counting_methods(self.model)
-            self.model.eval().start_flops_count()
-            _ = self.model(sample_batch)
-            flop_value = flop.flops_to_string_value(self.model.compute_average_flops_cost())
-            param_value = flop.get_model_parameters_number_value_mask(self.model)
-            self.model.eval().stop_flops_count()
-            self.model = fcm.remove_flops_counting_methods(self.model)
-            print(f'Flops: {flop_value}, Params: {param_value}')
+
+        #if self.save_loss:
+            #sample_batch = torch.FloatTensor(1, 3, 32,
+                                             #32).cuda() if self.args.cuda else torch.FloatTensor(
+                #1, 3, 32, 32)
+            #self.model = fcm.add_flops_counting_methods(self.model)
+            #self.model.eval().start_flops_count()
+            #_ = self.model(sample_batch)
+            #flop_value = flop.flops_to_string_value(self.model.compute_average_flops_cost())
+            #param_value = flop.get_model_parameters_number_value_mask(self.model)
+            #self.model.eval().stop_flops_count()
+            #self.model = fcm.remove_flops_counting_methods(self.model)
+            #print(f'Flops: {flop_value}, Params: {param_value}')
 
             # Save results for each image in the same CSV file with batch_idx as an indexer
             #self.save_(epoch, batch_idx, test_accuracy, test_loss, flop_value, param_value, target, output)
 
-            print(f'\nEpoch: {epoch} | Batch: {batch_idx} | Test Accuracy: {test_accuracy:.5f} | Test Loss: {test_loss:.4f} | FLOPs: {flop_value} | Params: {param_value}\n')
+            #print(f'\nEpoch: {epoch} | Batch: {batch_idx} | Test Accuracy: {test_accuracy:.5f} | Test Loss: {test_loss:.4f} | FLOPs: {flop_value} | Params: {param_value}\n')
 
+            #return test_accuracy, test_loss, flop_value, param_value, torch.tensor(np.array(target_all)), torch.tensor(np.array(output_all))#, self.df
 
-            return test_accuracy, test_loss, flop_value, param_value, torch.tensor(np.array(target_all)), torch.tensor(np.array(output_all))#, self.df
-
-        else:
-            return test_accuracy, test_loss, None, None, target, output#, self.df
+        #else:
+        #    return test_accuracy, test_loss, None, None, target, output#, self.df
 
     def get_candidates_to_prune(self, num_filters_to_prune, layer_type='conv'):
         self.prunner.reset()
@@ -509,7 +513,7 @@ class PruningFineTuner:
                 # Update the ratio_pruned_filters before fine-tuning
                 self.train()
                 #test_accuracy, test_loss, flop_value, param_value, target, output, df = self.test(epoch=i)  # I tested it after it was cut.
-                test_accuracy, test_loss, flop_value, param_value, target, output = self.test(epoch=i)
+                test_accuracy, test_loss, flop_value, param_value, target, output = self.test()
                 
                 self.ratio_pruned_filters = ratio_pruned_filters
     
