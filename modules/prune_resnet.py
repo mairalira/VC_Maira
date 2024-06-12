@@ -165,7 +165,7 @@ class PruningFineTuner:
                 optimizer.step() #optimizer before scheduler
                 scheduler.step()
 
-                self.test(epoch=i)
+                #self.test(epoch=i)
             
             except Exception as e: #during fine-tuning
                 print(f'Exception during training: {e}')
@@ -535,7 +535,7 @@ class PruningFineTuner:
                 # Update the ratio_pruned_filters before fine-tuning
                 self.train()
                 #test_accuracy, test_loss, flop_value, param_value, target, output, df = self.test(epoch=i)  # I tested it after it was cut.
-                test_accuracy, test_loss, flop_value, param_value, target, output = self.test()
+                #test_accuracy, test_loss, flop_value, param_value, target, output = self.test()
                 
                 self.ratio_pruned_filters = ratio_pruned_filters
     
