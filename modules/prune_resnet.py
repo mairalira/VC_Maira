@@ -285,9 +285,6 @@ class PruningFineTuner:
         target_all = []
         output_all = []
 
-        if epochs is None:
-            epochs = self.args.epochs
-
         if epoch is not None and epoch != self.current_epoch:  # Check if it's the last epoch
             return
 
