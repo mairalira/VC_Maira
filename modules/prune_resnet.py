@@ -418,7 +418,7 @@ class PruningFineTuner:
                                                         #})
 
             # Computing Grad-CAM for the last epoch
-            if self.current_epoch == self.args.epochs:
+            if self.current_epoch == self.args.epochs - 1:
                 with torch.enable_grad():
                     for batch_idx, (data, target) in enumerate(self.test_loader):
                         if self.args.cuda:
