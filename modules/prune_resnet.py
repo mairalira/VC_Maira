@@ -391,7 +391,7 @@ class PruningFineTuner:
             
         test_loss /= ctr
         test_accuracy = float(correct) / ctr
-        print(f'\nEpoch: {epoch} | Batch: {batch_idx} | Test Accuracy: {test_accuracy:.5f} | Test Loss: {test_loss:.4f} | FLOPs: {flop_value} | Params: {param_value}\n')
+        print(f'\nEpoch: {self.current_epoch} | Batch: {batch_idx} | Test Accuracy: {test_accuracy:.5f} | Test Loss: {test_loss:.4f} | FLOPs: {flop_value} | Params: {param_value}\n')
     
         self.df.loc[self.current_epoch] = pd.Series({"ratio_pruned": self.ratio_pruned_filters,
                                                      "test_acc": test_accuracy,
@@ -412,7 +412,7 @@ class PruningFineTuner:
             self.model = fcm.remove_flops_counting_methods(self.model)
             #print(f'Flops: {flop_value}, Params: {param_value}')
 
-            print(f'\nEpoch: {epoch} | Batch: {batch_idx} | Test Accuracy: {test_accuracy:.5f} | Test Loss: {test_loss:.4f} | FLOPs: {flop_value} | Params: {param_value}\n')
+            print(f'\nEpoch: {self.current_epoch} | Batch: {batch_idx} | Test Accuracy: {test_accuracy:.5f} | Test Loss: {test_loss:.4f} | FLOPs: {flop_value} | Params: {param_value}\n')
 
             #self.df.loc[self.current_epoch] = pd.Series({"ratio_pruned": self.ratio_pruned_filters,
                                                          #"test_acc": test_accuracy,
