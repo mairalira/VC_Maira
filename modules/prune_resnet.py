@@ -393,7 +393,7 @@ class PruningFineTuner:
 
             ctr += len(pred)
 
-            if epoch is not None and self.current_epoch == 9:
+            if epoch is not None and self.current_epoch == 4:
                 # Get Grad-CAM for the first image in the batch
                 get_gradcam(data[0].unsqueeze(0), f"batch{batch_idx}_image0")
             
