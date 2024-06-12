@@ -153,7 +153,7 @@ class PruningFineTuner:
         # Log results to console
         print(f'\nEpoch: {epoch} | Batch: {batch_idx} | Test Accuracy: {test_accuracy:.5f} | Test Loss: {test_loss:.4f} | FLOPs: {flop_value} | Params: {param_value}\n')
 
-    def train(self, optimizer=None, epochs=10): #corrected epochs argument (was epoches)
+    def train(self, optimizer=None, epochs=self.epochs): #corrected epochs argument (was epoches)
         if optimizer is None:
             optimizer = optim.SGD(self.model.parameters(), lr=self.args.lr,
                                   momentum=self.args.momentum, weight_decay=self.args.weight_decay)
