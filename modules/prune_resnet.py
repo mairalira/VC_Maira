@@ -460,7 +460,9 @@ class PruningFineTuner:
             else:
                 continue
 
-    def prune(self, args):
+    def prune(self, args, epochs=None):
+        if epochs is None:
+            epochs = self.args.epochs
         self.save_loss = True
         self.model.eval()
         for i in range(epochs):
