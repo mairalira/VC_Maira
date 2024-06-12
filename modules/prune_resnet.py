@@ -179,7 +179,7 @@ class PruningFineTuner:
                                                         #"target": target.cpu().numpy().tolist(),
                                                         #"output": output.cpu().detach().numpy().tolist()
                                                         #})
-                #self.COUNT_ROW += 1
+                self.COUNT_ROW += 1
 
         print("Finished fine tuning")
 
@@ -379,7 +379,7 @@ class PruningFineTuner:
             ctr += len(pred)
             
             #Get Grad-CAM for the first image in the batch
-            print('Get gradcams')
+            #print('Get gradcams')
             get_gradcam(data[0].unsqueeze(0), f"batch{batch_idx}_image0")
             
             #if epoch is not None and self.current_epoch == 9:
