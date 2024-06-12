@@ -445,6 +445,10 @@ class PruningFineTuner:
         if epochs is None:
             epochs = self.args.epochs
         self.save_loss = True
+
+        # Fine-tune the model before pruning
+        self.train(optimizer=None, epochs=epochs) #included this step because the pretrained model has low accuracy and to be fair with the unprunned model
+        
         self.model.eval()
         for i in range(epochs):
             print("Epoch: ", i)
