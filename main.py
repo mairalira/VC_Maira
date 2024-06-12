@@ -128,15 +128,15 @@ if __name__ == '__main__':
         #fine_tuner.dt = pd.DataFrame(columns=["epoch", "train_acc", "train_loss"])
 
         # Create a dictionary with evaluation results
-        evaluation_results = {
-                            "ratio_pruned": 0.0,
-                            "test_acc": test_accuracy,
-                            "test_loss": test_loss,
-                            "flops": flop_value,
-                            "params": param_value,
-                            "target": target.cpu().numpy(),
-                            "output": output.cpu().detach().numpy()
-                            }
+        #evaluation_results = {
+                            #"ratio_pruned": 0.0,
+                            #"test_acc": test_accuracy,
+                            #"test_loss": test_loss,
+                            #"flops": flop_value,
+                            #"params": param_value,
+                            #"target": target.cpu().numpy(),
+                            #"output": output.cpu().detach().numpy()
+                            #}
         
         #fine_tuner.df.loc[fine_tuner.COUNT_ROW] = pd.Series(evaluation_results)        
         #fine_tuner.COUNT_ROW += 1
