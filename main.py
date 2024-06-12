@@ -30,7 +30,7 @@ def get_args():
                         help='trial number (default: 1)')
     parser.add_argument('--epochs', type=int, default=5, metavar='N',
                         help='number of epochs to train (default: 10)')
-    parser.add_argument('--lr', type=float, default=0.1, metavar='LR',
+    parser.add_argument('--lr', type=float, default=0.001, metavar='LR',
                         help='learning rate (default: 0.001)')
     parser.add_argument('--momentum', type=float, default=0.9, metavar='M',
                         help='SGD momentum (default: 0.5)')
