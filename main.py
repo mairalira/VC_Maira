@@ -138,5 +138,5 @@ if __name__ == '__main__':
         results_file_train = f"{args.save_dir}/scenario1_train_{args.data_type}_{args.arch}_{args.method_type}_trial{args.trialnum:02d}.csv"
 
         # Save the initial evaluation results
-        #fine_tuner.df.to_csv(results_file)
+        fine_tuner.df.to_csv(results_file)
         #fine_tuner.dt.to_csv(results_file_train)
