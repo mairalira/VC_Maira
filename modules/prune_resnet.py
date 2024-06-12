@@ -41,7 +41,7 @@ class PruningFineTuner:
         torch.manual_seed(args.seed)
         self.ratio_pruned_filters = 1.0
         self.current_epoch = 0  # Initialize current_epoch variable
-        self.df = pd.DataFrame(columns=["ratio_pruned", "test_acc", "test_loss", "flops","params", "target", "output"])
+        #self.df = pd.DataFrame(columns=["ratio_pruned", "test_acc", "test_loss", "flops","params", "target", "output"])
         self.dt = pd.DataFrame(columns=["ratio_pruned", "train_loss"])
         
         if args.cuda:
@@ -134,26 +134,7 @@ class PruningFineTuner:
                 else:
                     filters += module.out_channels
         return filters
-
-    def save_results(self, epoch, batch_idx, test_accuracy, test_loss, flop_value, param_value, target, output):
-        # Save test results
-        batch_results = {
-            "epoch": [epoch],
-            "batch_idx": [batch_idx],
-            "test_accuracy": [test_accuracy],
-            "test_loss": [test_loss],
-            "flop_value": [flop_value],
-            "param_value": [param_value],
-            "target": [str(target.tolist())],
-            "output": [str(output.tolist())]
-        }
-        batch_results_df = pd.DataFrame(batch_results)
-        results_file = "batch_results.csv"
-        batch_results_df.to_csv(results_file, mode='a', header=not os.path.exists(results_file), index=False)
     
-        # Log results to console
-        print(f'\nEpoch: {epoch} | Batch: {batch_idx} | Test Accuracy: {test_accuracy:.5f} | Test Loss: {test_loss:.4f} | FLOPs: {flop_value} | Params: {param_value}\n')
-
     def train(self, optimizer=None, epochs=None): #corrected epochs argument (was epoches)
         if epochs is None:
             epochs = self.args.epochs
@@ -189,16 +170,16 @@ class PruningFineTuner:
                 print(f'Exception during training: {e}')
                 self.train_epoch(optimizer=optimizer)
                 test_accuracy, test_loss, flop_value, param_value, target, output = self.test(epoch=i)
-                self.df.loc[self.COUNT_ROW] = pd.Series({
-                                                        "ratio_pruned": self.ratio_pruned_filters,
-                                                        "test_acc": test_accuracy,
-                                                        "test_loss": test_loss,
-                                                        "flops": flop_value,
-                                                        "params": param_value, 
-                                                        "target": target.cpu().numpy().tolist(),
-                                                        "output": output.cpu().detach().numpy().tolist()
-                                                        })
-                self.COUNT_ROW += 1
+                #self.df.loc[self.COUNT_ROW] = pd.Series({
+                                                        #"ratio_pruned": self.ratio_pruned_filters,
+                                                        #"test_acc": test_accuracy,
+                                                        #"test_loss": test_loss,
+                                                        #"flops": flop_value,
+                                                        #"params": param_value, 
+                                                        #"target": target.cpu().numpy().tolist(),
+                                                        #"output": output.cpu().detach().numpy().tolist()
+                                                        #})
+                #self.COUNT_ROW += 1
 
         print("Finished fine tuning")
 
@@ -473,8 +454,8 @@ class PruningFineTuner:
             #test_accuracy, test_loss, flop_value, param_value, target, output, df = self.test()
             test_accuracy, test_loss, flop_value, param_value, target, output= self.test()
     
-            if df is not None:
-                self.df = df
+            #if df is not None:
+            #    self.df = df
     
             # Make sure all the layers are trainable
             for param in self.model.parameters():
@@ -486,22 +467,6 @@ class PruningFineTuner:
             iterations = int(iterations * self.args.total_pr)
     
             self.ratio_pruned_filters = 1.0
-            
-            results_file = f"{args.save_dir}/scenario1_results_{self.args.data_type}_{self.args.arch}_{self.args.method_type}_trial{self.args.trialnum:02d}.csv"
-            results_file_train = f"{args.save_dir}/scenario1_train_{self.args.data_type}_{self.args.arch}_{self.args.method_type}_trial{self.args.trialnum:02d}.csv"
-            
-            self.df = pd.DataFrame(columns=["ratio_pruned", "test_acc", "test_loss", "flops","params","target","output"])
-            self.dt = pd.DataFrame(columns=["ratio_pruned", "train_loss"])
-            
-            self.df.loc[self.COUNT_ROW] = pd.Series({
-                                                     "ratio_pruned": self.ratio_pruned_filters,
-                                                     "test_acc": test_accuracy,
-                                                     "test_loss": test_loss, 
-                                                     "flops": flop_value,
-                                                     "params": param_value,
-                                                     "target": target.cpu().numpy(),
-                                                     "output": output.cpu().detach().numpy(),})
-            self.COUNT_ROW += 1
             
             for kk in range(iterations):
                 print("Ranking filters.. {}".format(kk))
@@ -539,18 +504,10 @@ class PruningFineTuner:
     
                 # Update the ratio_pruned_filters before fine-tuning
                 self.train(optimizer, epochs=10)
-                test_accuracy, test_loss, flop_value, param_value, target, output, df = self.test(epoch=i)  # I tested it after it was cut.
-    
+                #test_accuracy, test_loss, flop_value, param_value, target, output, df = self.test(epoch=i)  # I tested it after it was cut.
+                test_accuracy, test_loss, flop_value, param_value, target, output = self.test(epoch=i)
+                
                 self.ratio_pruned_filters = ratio_pruned_filters
-                self.df.loc[self.COUNT_ROW] = pd.Series({"ratio_pruned": ratio_pruned_filters,
-                                                         "test_acc": test_accuracy,
-                                                         "test_loss": test_loss,
-                                                         "flops": flop_value,
-                                                         "params": param_value,
-                                                         "target": target.cpu().numpy(),
-                                                         "output": output.cpu().detach().numpy()})
-                self.COUNT_ROW += 1
-                #self.df.to_csv(_file)
     
                 if self.args.method_type == 'lrp' or self.args.method_type == 'weight':
                     self.copy_mask()  # copy mask from my model to the wrapper model
@@ -559,20 +516,9 @@ class PruningFineTuner:
                 optimizer = optim.SGD(self.model.parameters(), lr=self.args.lr,
                                       momentum=self.args.momentum)
                 self.train(optimizer, epochs=10)
-                #self.dt.to_csv(results_file_train)
     
             print("Finished. Going to fine tune the model a bit more")
             self.train(optimizer, epochs=10)
-            #self.dt.to_csv(results_file_train)
     
             self.ratio_pruned_filters = ratio_pruned_filters
-            
-            self.df.loc[self.COUNT_ROW] = pd.Series({"ratio_pruned": ratio_pruned_filters,
-                                                     "test_acc": test_accuracy,
-                                                     "test_loss": test_loss,
-                                                     "flops": flop_value,
-                                                     "params": param_value,
-                                                     "target": target.cpu().numpy(),
-                                                     "output": output.cpu().detach().numpy()})
-            #self.df.to_csv(results_file)
 
