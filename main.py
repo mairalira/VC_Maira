@@ -2,6 +2,8 @@
 This code is based on:
 @reference: Seul-Ki Yeom et al., "Pruning by explaining: a novel criterion for deep neural network pruning," Pattern Recognition, 2020.
 @author: Seul-Ki Yeom, Philipp Seegerer, Sebastian Lapuschkin, Alexander Binder, Simon Wiedemann, Klaus-Robert Müller, Wojciech Samek
+Note that this implementations was tested only for ResNet50 and Cifar 10 dataset, so to run Grad-CAM with other model architecture some changes will be needed on prune_resnet.py. 
+Beyond that, networks.py must be reviewed for VGG16 and AlexNet just in case.
 '''
 from __future__ import print_function
 import argparse
@@ -114,7 +116,7 @@ if __name__ == '__main__':
         #fine_tuner.dt.to_csv(results_file_train)
     
     else:
-        # runs when pruning is false
+        # Saves results when pruning is false
         # Define the results file paths
         results_file = f"{args.save_dir}/scenario1_results_{args.data_type}_{args.arch}_{args.method_type}_trial{args.trialnum:02d}.csv"
         results_file_train = f"{args.save_dir}/scenario1_train_{args.data_type}_{args.arch}_{args.method_type}_trial{args.trialnum:02d}.csv"
