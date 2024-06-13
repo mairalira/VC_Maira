@@ -556,11 +556,11 @@ class PruningFineTuner:
 
             print("Fine tuning to recover from prunning iteration.")
             
-            self.train()
+            self.train(optimizer=None, epochs=epochs)
             self.dt.to_csv(results_file_train)
 
         print("Finished. Going to fine tune the model a bit more")
-        self.train(optimizer, epoches=10)
+        self.train(optimizer=None, epochs=epochs)
         self.dt.to_csv(results_file_train)
 
         self.ratio_pruned_filters = ratio_pruned_filters
