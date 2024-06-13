@@ -47,7 +47,7 @@ def get_args():
     parser.add_argument('--norm', action='store_true', help='add normalization')
     parser.add_argument('--resume', type=bool, default=True, metavar='N',
                         help='if we have pretrained model')
-    parser.add_argument('--train', type=bool, default=False, metavar='N',
+    parser.add_argument('--train', type=bool, default=True, metavar='N',
                         help='training data')
     parser.add_argument('--method-type', type=str, default='lrp', metavar='N',
                         help='model architecture selection: grad/taylor/weight/lrp')
