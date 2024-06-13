@@ -171,15 +171,6 @@ class PruningFineTuner:
                 print(f'Exception during training: {e}')
                 self.train_epoch(optimizer=optimizer)
                 test_accuracy, test_loss, flop_value, param_value = self.test()
-                #self.df.loc[self.COUNT_ROW] = pd.Series({
-                                                        #"ratio_pruned": self.ratio_pruned_filters,
-                                                        #"test_acc": test_accuracy,
-                                                        #"test_loss": test_loss,
-                                                        #"flops": flop_value,
-                                                        #"params": param_value, 
-                                                        #"target": target.cpu().numpy().tolist(),
-                                                        #"output": output.cpu().detach().numpy().tolist()
-                                                        #})
                 self.COUNT_ROW += 1
 
         print("Finished fine tuning")
@@ -196,14 +187,6 @@ class PruningFineTuner:
         if self.save_loss == True and not rank_filters:# == False: #save train_loss only during fine-tuning
             self.dt.loc[self.COUNT_TRAIN] = pd.Series({"ratio_pruned": self.ratio_pruned_filters,
                                                        "train_loss": self.train_loss / len(self.train_loader.dataset)})
-            #self.df.loc[self.COUNT_TRAIN] = pd.Series({"ratio_pruned": self.ratio_pruned_filters,
-                                                        #"test_acc": test_accuracy,
-                                                        #"test_loss": test_loss,
-                                                        #"flops": flop_value,
-                                                        #"params": param_value, 
-                                                        ##"target": target.cpu().numpy().tolist(),
-                                                        ##"output": output.cpu().detach().numpy().tolist()
-                                                        #})
             self.COUNT_TRAIN += 1
 
     def train_batch(self, optimizer, batch_idx, batch, label, rank_filters):
@@ -284,13 +267,8 @@ class PruningFineTuner:
         ctr = 0
         flop_value = 0
         param_value = 0
-        #target_all = []
-        #output_all = []
 
         print("Test method - Epoch:", self.current_epoch)
-        
-        #if self.args.epochs is not None and self.current_epoch != self.args.epochs:  # Check if it's the last epoch
-            #return None
 
         save_dir = 'gradcam_results'
         os.makedirs(save_dir, exist_ok=True)
@@ -354,7 +332,8 @@ class PruningFineTuner:
             
             #Resizing Images
             heatmap_colored_resized = cv2.resize(heatmap_colored, (224, 224))
-            image_array_resized = cv2.resize(image_array, (224, 224))
+            image_array_resized = cv2.resize(image_array, (224, 224) 
+            #should have implemente image_array_resized = cv2.cvtColor(image_array_resized, cv2.COLOR_BGR2RGB) because cv2 uses the BGR order
             #print('Heatmap shape:', heatmap_colored_resized.shape, flush=True)
             #print('Image array shape:', image_array_resized.shape, flush=True)
             
@@ -383,9 +362,6 @@ class PruningFineTuner:
                 test_loss += self.criterion(output, target).item()
                 pred = output.data.max(1, keepdim=True)[1]
                 correct += pred.eq(target.data.view_as(pred)).cpu().sum()
-                
-                #target_all.extend(target.cpu().numpy())
-                #output_all.extend(output.cpu().detach().numpy())
     
                 ctr += len(pred)
             
@@ -399,7 +375,6 @@ class PruningFineTuner:
                                                      "flops": flop_value,
                                                      "params": param_value
                                                     })
-        #return test_accuracy, test_loss, flop_value, param_value, torch.tensor(np.array(target_all)), torch.tensor(np.array(output_all))
         
         if self.save_loss:
             sample_batch = torch.FloatTensor(1, 3, 32, 32).cuda() if self.args.cuda else torch.FloatTensor(1, 3, 32, 32)
@@ -414,13 +389,6 @@ class PruningFineTuner:
 
             print(f'\nEpoch: {self.current_epoch} | Batch: {batch_idx} | Test Accuracy: {test_accuracy:.5f} | Test Loss: {test_loss:.4f} | FLOPs: {flop_value} | Params: {param_value}\n')
 
-            #self.df.loc[self.current_epoch] = pd.Series({"ratio_pruned": self.ratio_pruned_filters,
-                                                         #"test_acc": test_accuracy,
-                                                         #"test_loss": test_loss,
-                                                         #"flops": flop_value,
-                                                         #"params": param_value
-                                                        #})
-
             # Computing Grad-CAM for the last epoch
             if self.current_epoch == self.args.epochs - 1:
                 with torch.enable_grad():
@@ -433,8 +401,6 @@ class PruningFineTuner:
 
         else:
             return test_accuracy, test_loss, None, None
-            #, torch.tensor(np.array(target_all)), torch.tensor(np.array(output_all))
-    
 
     def get_candidates_to_prune(self, num_filters_to_prune, layer_type='conv'):
         self.prunner.reset()
@@ -494,9 +460,6 @@ class PruningFineTuner:
         
         results_file = f"scenario1_results_{self.args.data_type}_{self.args.arch}_{self.args.method_type}_trial{self.args.trialnum:02d}.csv"
         results_file_train = f"scenario1_train_{self.args.data_type}_{self.args.arch}_{self.args.method_type}_trial{self.args.trialnum:02d}.csv"
-        
-        #self.df = pd.DataFrame(columns=["ratio_pruned", "test_acc", "test_loss", "flops","params"])
-        #self.dt = pd.DataFrame(columns=["ratio_pruned", "train_loss"])
         
         self.df.loc[self.COUNT_ROW] = pd.Series({"ratio_pruned": self.ratio_pruned_filters,
                                                  "test_acc": test_accuracy,
