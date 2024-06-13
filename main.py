@@ -1,8 +1,8 @@
 '''
+This code is based on:
 @reference: Seul-Ki Yeom et al., "Pruning by explaining: a novel criterion for deep neural network pruning," Pattern Recognition, 2020.
 @author: Seul-Ki Yeom, Philipp Seegerer, Sebastian Lapuschkin, Alexander Binder, Simon Wiedemann, Klaus-Robert Müller, Wojciech Samek
 '''
-
 from __future__ import print_function
 import argparse
 import numpy as np
@@ -20,12 +20,12 @@ def get_args():
     # Training settings
     parser = argparse.ArgumentParser(description='PyTorch ResNet50 based ImageNet')
 
-    parser.add_argument('--arch', default='vgg16', metavar='ARCH',
+    parser.add_argument('--arch', default='resnet50', metavar='ARCH',
                         help='model architecture: resnet18, resnet50, vgg16, alexnet')
     parser.add_argument('--train-batch-size', type=int, default=64, metavar='N',
-                        help='input batch size for training (default: 32)')
+                        help='input batch size for training (default: 64)')
     parser.add_argument('--test-batch-size', type=int, default=64, metavar='N',
-                        help='input batch size for testing (default: 20)')
+                        help='input batch size for testing (default: 64)')
     parser.add_argument('--trialnum', type=int, default=1, metavar='N',
                         help='trial number (default: 1)')
     parser.add_argument('--epochs', type=int, default=10, metavar='N',
@@ -33,24 +33,20 @@ def get_args():
     parser.add_argument('--lr', type=float, default=0.001, metavar='LR',
                         help='learning rate (default: 0.001)')
     parser.add_argument('--momentum', type=float, default=0.9, metavar='M',
-                        help='SGD momentum (default: 0.5)')
+                        help='SGD momentum (default: 0.9)')
     parser.add_argument('--weight-decay', '--wd', type=float, default=1e-4, metavar='W',
                         help='weight decay (default: 1e-4)')
     parser.add_argument('--no-cuda', action='store_true', default=False,
                         help='disables CUDA training')
     parser.add_argument('--seed', type=int, default=1, metavar='S',
                         help='random seed (default: 1)')
-
-    # parser.add_argument('--train', action='store_true', help='training data')
+    
     parser.add_argument('--prune', action='store_true', help='pruning model')
-    # parser.add_argument('--relevance', action='store_true', help='Compute relevances')
     parser.add_argument('--norm', action='store_true', help='add normalization')
     parser.add_argument('--resume', type=bool, default=True, metavar='N',
                         help='if we have pretrained model')
     parser.add_argument('--train', type=bool, default=False, metavar='N',
                         help='training data')
-    # parser.add_argument('--prune', type=bool, default=True, metavar='N',
-    #                   help='pruning model')
     parser.add_argument('--method-type', type=str, default='lrp', metavar='N',
                         help='model architecture selection: grad/taylor/weight/lrp')
 
@@ -118,29 +114,7 @@ if __name__ == '__main__':
         #fine_tuner.dt.to_csv(results_file_train)
     
     else:
-        # If pruning is not performed, ensure initial evaluation and results saving
-        #print(f'Evaluating model without pruning.  Dataset: {args.data_type}, Architecture: {args.arch}')
-        #args.save_loss=True
-        #test_accuracy, test_loss, flop_value, param_value, target, output  = fine_tuner.test()
-
-        # Initialize the DataFrame to store results
-        #fine_tuner.df = pd.DataFrame(columns=["ratio_pruned", "test_acc", "test_loss", "flops", "params", "target", "output"])
-        #fine_tuner.dt = pd.DataFrame(columns=["epoch", "train_acc", "train_loss"])
-
-        # Create a dictionary with evaluation results
-        #evaluation_results = {
-                            #"ratio_pruned": 0.0,
-                            #"test_acc": test_accuracy,
-                            #"test_loss": test_loss,
-                            #"flops": flop_value,
-                            #"params": param_value,
-                            #"target": target.cpu().numpy(),
-                            #"output": output.cpu().detach().numpy()
-                            #}
-        
-        #fine_tuner.df.loc[fine_tuner.COUNT_ROW] = pd.Series(evaluation_results)        
-        #fine_tuner.COUNT_ROW += 1
-
+        # runs when pruning is false
         # Define the results file paths
         results_file = f"{args.save_dir}/scenario1_results_{args.data_type}_{args.arch}_{args.method_type}_trial{args.trialnum:02d}.csv"
         results_file_train = f"{args.save_dir}/scenario1_train_{args.data_type}_{args.arch}_{args.method_type}_trial{args.trialnum:02d}.csv"
