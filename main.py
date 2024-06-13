@@ -108,7 +108,7 @@ if __name__ == '__main__':
     if args.prune:
         print(f'Start pruning! Dataset: {args.data_type}, Architecture: {args.arch}, Pruning Method: {args.method_type},'
               f' Total Pruning rate: {args.total_pr}, Pruning step: {args.pr_step}')
-        fine_tuner.prune(args)
+        fine_tuner.prune()
         # Define the results file paths
         results_file = f"{args.save_dir}/scenario1_results_{args.data_type}_{args.arch}_{args.method_type}_trial{args.trialnum:02d}.csv"
         results_file_train = f"{args.save_dir}/scenario1_train_{args.data_type}_{args.arch}_{args.method_type}_trial{args.trialnum:02d}.csv"
