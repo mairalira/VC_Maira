@@ -184,7 +184,7 @@ class PruningFineTuner:
             data, target = Variable(data), Variable(target)
             self.train_batch(optimizer, batch_idx, data, target, rank_filters)
 
-        if self.save_loss == True and not rank_filters:# == False: #save train_loss only during fine-tuning
+        if self.save_loss == True and not rank_filters: #save train_loss only during fine-tuning
             self.dt.loc[self.COUNT_TRAIN] = pd.Series({"ratio_pruned": self.ratio_pruned_filters,
                                                        "train_loss": self.train_loss / len(self.train_loader.dataset)})
             self.COUNT_TRAIN += 1
@@ -397,7 +397,7 @@ class PruningFineTuner:
                             data, target = data.cuda(), target.cuda()
                         get_gradcam(data[0].unsqueeze(0), f"batch{batch_idx}_image0")
 
-            return test_accuracy, test_loss, flop_value, param_value#, torch.tensor(np.array(target_all)), torch.tensor(np.array(output_all))
+            return test_accuracy, test_loss, flop_value, param_value
 
         else:
             return test_accuracy, test_loss, None, None
