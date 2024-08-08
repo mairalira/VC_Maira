@@ -332,7 +332,7 @@ class PruningFineTuner:
             
             #Resizing Images
             heatmap_colored_resized = cv2.resize(heatmap_colored, (224, 224))
-            image_array_resized = cv2.resize(image_array, (224, 224) 
+            image_array_resized = cv2.resize(image_array, (224, 224))
             #should have implemente image_array_resized = cv2.cvtColor(image_array_resized, cv2.COLOR_BGR2RGB) because cv2 uses the BGR order
             #print('Heatmap shape:', heatmap_colored_resized.shape, flush=True)
             #print('Image array shape:', image_array_resized.shape, flush=True)
